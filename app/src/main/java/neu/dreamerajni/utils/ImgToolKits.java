@@ -18,6 +18,8 @@ public class ImgToolKits {
 
 //    private static Mat src = new Mat();
 //    private static Mat dst = new Mat();
+
+
     public static int addHeight;
 
     /**
@@ -64,6 +66,7 @@ public class ImgToolKits {
 //        int height = dst.height();
 
         Bitmap b = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_4444);
+        
 //        Utils.matToBitmap(dst, b);//Mat 转 bitmap
 
         b.setPixels(resultPixes, 0, width, 0, 0, width, height);
