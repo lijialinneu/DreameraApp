@@ -58,20 +58,10 @@ public class ImgToolKits {
         int[] resultPixes = OpenCVHelper.Canny(pix, width, height);
 
 //        System.out.println("asdf resultpixes "+ resultPixes);
-
-
 //        Utils.bitmapToMat(srcb, src); // bitmap 转 Mat; src 是4通道图
-
-
 //        Imgproc.Canny(src, dst, 100, 100);// 边缘检测 Canny算子; dst是1通道图
-
-
-
 //        int width = dst.width();
 //        int height = dst.height();
-//        int width = 0;
-//        int height = 0;
-
 
         Bitmap b = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_4444);
 //        Utils.matToBitmap(dst, b);//Mat 转 bitmap
