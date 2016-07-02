@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">Dreamera jni</string>
+    <string name="title_activity_main">Dreamera Map</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
+
+    <!--add on 2016-06-06 by 10405-->
+    <string name="welcome">Dreamera jni</string>
+
+    <!--add on 2016-06-07 by 10405-->
+    <string name="no_net">网络连接断开</string>
+    <string name="title_activity_camera">CameraActivity</string>
+</resources>

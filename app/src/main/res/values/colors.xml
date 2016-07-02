@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#3F3F3F</color>
+    <color name="colorPrimaryDark">#1F1F1F</color>
+    <color name="colorAccent">#5F5F5F</color>
+
+    <color name="popupWindow">#CC4e5a6b</color>
+
+    <!-- add on 2016-06-14 by 10405 -->
+    <color name="btn_default_light_normal">#00000000</color>
+    <color name="btn_default_light_pressed">#40ffffff</color>
+
+    <!-- add on 2016-06-14 by 10405 -->
+    <color name="black_overlay">#66000000</color>
+
+
+</resources>
