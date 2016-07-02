@@ -2,23 +2,14 @@ package neu.dreamerajni.utils;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
-
-//import org.opencv.android.Utils;
-//import org.opencv.core.Mat;
-//import org.opencv.imgproc.Imgproc;
 
 
 /**
  * Created by lijialin on 16-3-7.
  */
 public class ImgToolKits {
-
-//    private static Mat src = new Mat();
-//    private static Mat dst = new Mat();
-
 
     public static int addHeight;
 
@@ -59,32 +50,11 @@ public class ImgToolKits {
         srcb.getPixels(pix, 0, width, 0, 0, width, height);
         int[] resultPixes = OpenCVHelper.Canny(pix, width, height);
 
-//        System.out.println("asdf resultpixes "+ resultPixes);
-//        Utils.bitmapToMat(srcb, src); // bitmap 转 Mat; src 是4通道图
-//        Imgproc.Canny(src, dst, 100, 100);// 边缘检测 Canny算子; dst是1通道图
-//        int width = dst.width();
-//        int height = dst.height();
-
         Bitmap b = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_4444);
-        
-//        Utils.matToBitmap(dst, b);//Mat 转 bitmap
 
         b.setPixels(resultPixes, 0, width, 0, 0, width, height);
 
-//        for(int i=0; i < b.getWidth(); i++) { //循环每个像素点
-//            for(int j=0; j < b.getHeight(); j++) {
-//                if(b.getPixel(i,j) != Color.BLACK ){
-//                    b.setPixel(i,j,Color.GREEN);
-//                    if(i >= 1){
-//                        b.setPixel(i-1,j, Color.GREEN);
-//                    }
-//                }else {
-//                    b.setPixel(i,j,Color.argb(0,0,0,0));
-//                }
-//            }
-//        }
         return b;
-
     }
 
 
