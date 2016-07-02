@@ -57,7 +57,7 @@ public class ImgToolKits {
         srcb.getPixels(pix, 0, width, 0, 0, width, height);
         int[] resultPixes = OpenCVHelper.Canny(pix, width, height);
 
-        System.out.println("asdf resultpixes "+ resultPixes);
+//        System.out.println("asdf resultpixes "+ resultPixes);
 
 
 //        Utils.bitmapToMat(srcb, src); // bitmap 转 Mat; src 是4通道图
