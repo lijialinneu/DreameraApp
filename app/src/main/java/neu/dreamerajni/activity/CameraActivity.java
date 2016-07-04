@@ -17,7 +17,6 @@ import android.hardware.Camera;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -34,10 +33,6 @@ import com.commonsware.cwac.camera.CameraView;
 import com.commonsware.cwac.camera.PictureTransaction;
 import com.commonsware.cwac.camera.SimpleCameraHost;
 import com.commonsware.cwac.camera.ZoomTransaction;
-
-//import org.opencv.android.BaseLoaderCallback;
-//import org.opencv.android.LoaderCallbackInterface;
-//import org.opencv.android.OpenCVLoader;
 
 import java.io.File;
 import java.io.IOException;
@@ -97,25 +92,6 @@ public class CameraActivity extends AppCompatActivity implements
         startingActivity.startActivity(intent);
     }
 
-    /**
-     * 加载OpenCV的回调函数，用此函数在手机上安装OpenCV Manager
-     * @author 10405
-     */
-//    private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
-//        @Override
-//        public void onManagerConnected(int status) {
-//            switch (status) {
-//                case LoaderCallbackInterface.SUCCESS:{
-//                    Log.i("CameraActivity", "Load success");
-//                } break;
-//                default:{
-//                    super.onManagerConnected(status);
-//                } break;
-//            }
-//        }
-//    };
-
-
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -123,13 +99,6 @@ public class CameraActivity extends AppCompatActivity implements
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_camera);
         ButterKnife.bind(this);
-
-//        if (!OpenCVLoader.initDebug()) {  // 加载OpenCV
-//            OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_1_0, this, mLoaderCallback);
-//        } else {
-//            mLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
-//        }
-
         setupRevealBackground(savedInstanceState);
     }
 
@@ -352,13 +321,13 @@ public class CameraActivity extends AppCompatActivity implements
             }
 
             //跳转到下一个Activity
-//            Intent intent = new Intent();
-//            intent.setClass(CameraActivity.this, HandleActivity.class);
-//            intent.putExtra("id", pictureID);
-//            float[] matrixValues = new float[9];
-//            lastMatrix.getValues(matrixValues);
-//            intent.putExtra("matrix", matrixValues); //传递矩阵
-//            CameraActivity.this.startActivity(intent);
+            Intent intent = new Intent();
+            intent.setClass(CameraActivity.this, HandleActivity.class);
+            intent.putExtra("id", pictureID);
+            float[] matrixValues = new float[9];
+            lastMatrix.getValues(matrixValues);
+            intent.putExtra("matrix", matrixValues); //传递矩阵
+            CameraActivity.this.startActivity(intent);
 
         }
     }

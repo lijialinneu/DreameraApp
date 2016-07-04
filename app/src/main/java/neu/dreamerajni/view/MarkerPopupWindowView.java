@@ -77,6 +77,7 @@ public class MarkerPopupWindowView extends View{
                 (RelativeLayout.LayoutParams) BMapControlUtil.map.getLayoutParams();
         mapParams.addRule(RelativeLayout.ABOVE, 0);
         BMapControlUtil.map.setLayoutParams(mapParams);
+        
     }
 
 

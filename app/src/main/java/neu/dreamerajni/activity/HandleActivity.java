@@ -13,18 +13,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.KeyEvent;
-import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
-import android.view.View.OnTouchListener;
-
-//import org.opencv.android.BaseLoaderCallback;
-//import org.opencv.android.LoaderCallbackInterface;
-//import org.opencv.android.OpenCVLoader;
 
 import java.io.File;
 import java.io.IOException;
@@ -65,40 +58,18 @@ public class HandleActivity extends AppCompatActivity  {
     private float xTrans, yTrans, sTop, scale; // x位移、y位移、surfaceView距顶部的宽度、放缩倍数
     private int left, top, right, bottom; // borderView的left、top、right、bottom值
 
-    private boolean borderShowed = false; //是否显示边缘
-    private boolean canDraw = false;
-    private int mark[][]; //用于标记(i,j)是否被涂抹过
+//    private boolean borderShowed = false; //是否显示边缘
+//
+//
+    private int a, b, c;
+    private int p1x, p1y, p2x, p2y;
 
-
-    /**
-     * 加载OpenCV的回调函数，用此函数在手机上安装OpenCV Manager
-     * @author 10405
-     */
-//    private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
-//        @Override
-//        public void onManagerConnected(int status) {
-//            switch (status) {
-//                case LoaderCallbackInterface.SUCCESS:{
-//                    Log.i("CameraActivity", "Load success");
-//                } break;
-//                default:{
-//                    super.onManagerConnected(status);
-//                } break;
-//            }
-//        }
-//    };
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_handle);
-
-//        if (!OpenCVLoader.initDebug()) {  // 加载OpenCV
-//            OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_1_0, this, mLoaderCallback);
-//        } else {
-//            mLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
-//        }
 
         ButterKnife.bind(this);
 
@@ -116,7 +87,7 @@ public class HandleActivity extends AppCompatActivity  {
         initPhoto();
         initBorder();
 
-        photoView.setOnTouchListener(myTouchListener);
+        showOldPixel();
 
     }
 
@@ -154,62 +125,49 @@ public class HandleActivity extends AppCompatActivity  {
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     public void initBorder() {
 
-        borderView = new ImageView(this);
+//        borderView = new ImageView(this);
         picFromFile = AsyncGetDataUtil.getPicFromFile(id); //从缓存中取出图片
-        borderBitmap = ImgToolKits.initBorderPic(picFromFile, screenWidth, screenWidth);
 
-//        sTop = (screenWidth - borderBitmap.getHeight()) / 2;
-//        System.out.println("asdf sTop "+ sTop);
+        //先把图片变成初始大小，然后再通过matrix变换
+        borderBitmap = ImgToolKits.initBorderPic(picFromFile, screenWidth, screenWidth);
 
         borderBitmap = Bitmap.createBitmap(borderBitmap,
                 0,0,borderBitmap.getWidth(),borderBitmap.getHeight(),
                 matrix, true);
-        borderView.setImageBitmap(borderBitmap);
+//        borderView.setImageBitmap(borderBitmap);
 
         borderWidth = borderBitmap.getWidth();
         borderHeight = borderBitmap.getHeight();
 
         copyPicFromFile = ImgToolKits.changeBitmapSize(
-                picFromFile, borderWidth, borderHeight - 2 * ImgToolKits.addHeight);
+                picFromFile, borderWidth, borderHeight - 2 * ImgToolKits.addHeight * matrixValues[Matrix.MSCALE_Y]);
 
         float[] matrixValues = new float[9];
         matrix.getValues(matrixValues);
-//        scale = matrixValues[Matrix.MSCALE_X];
         xTrans = matrixValues[Matrix.MTRANS_X];
         yTrans = matrixValues[Matrix.MTRANS_Y];
 
         left = (int) xTrans;
-//        top = (int)(yTrans + sTop + photoView.getTop());
         top = (int) (yTrans + photoView.getTop());
         right = left + borderWidth;
         bottom = top + borderHeight;
 
-        SquaredFrameLayout.LayoutParams lp = new SquaredFrameLayout.LayoutParams(
-                borderBitmap.getWidth(), borderBitmap.getHeight());
-        lp.setMargins(left,top,right,bottom);
-        squaredFrameLayout.addView(borderView, lp);
+//        SquaredFrameLayout.LayoutParams lp = new SquaredFrameLayout.LayoutParams(
+//                borderBitmap.getWidth(), borderBitmap.getHeight());
+//        lp.setMargins(left,top,right,bottom);
+//        squaredFrameLayout.addView(borderView, lp);
 
-        borderView.setOnKeyListener(new View.OnKeyListener() {
-            @Override
-            public boolean onKey(View v, int keyCode, KeyEvent event) {
-                switch (event.getKeyCode()) {
-                    case KeyEvent.KEYCODE_BACK:
-                        onBackPressed();
-                }
-                return false;
-            }
-        });
-        borderShowed = true;
-
-        // 初始化 Marker
-        mark = new int[copyPicFromFile.getWidth()][copyPicFromFile.getHeight()];
-        for(int i = 0; i < copyPicFromFile.getWidth(); i++) {
-            for (int j = 0; j < copyPicFromFile.getHeight(); j++) {
-                mark[i][j] = 0;
-            }
-        }
-
-
+//        borderView.setOnKeyListener(new View.OnKeyListener() {
+//            @Override
+//            public boolean onKey(View v, int keyCode, KeyEvent event) {
+//                switch (event.getKeyCode()) {
+//                    case KeyEvent.KEYCODE_BACK:
+//                        onBackPressed();
+//                }
+//                return false;
+//            }
+//        });
+//        borderShowed = true;
     }
 
 
@@ -219,15 +177,61 @@ public class HandleActivity extends AppCompatActivity  {
     }
 
 
-    @OnClick(R.id.btnShowBorder)
-    public void showBorder() {
-        if(borderShowed){ //如果已经显示出来了，则隐藏
-            borderView.setVisibility(View.GONE);
-            borderShowed = false;
-        } else { //如果没有显示，则显示
-            borderView.setVisibility(View.VISIBLE);
-            borderShowed = true;
+//    @OnClick(R.id.btnShowBorder)
+//    public void showBorder() {
+//        if(borderShowed) { //如果已经显示出来了，则隐藏
+//            borderView.setVisibility(View.GONE);
+//            borderShowed = false;
+//        } else { //如果没有显示，则显示
+//            borderView.setImageBitmap(borderBitmap);
+//            borderView.setVisibility(View.VISIBLE);
+//            borderShowed = true;
+//        }
+//    }
+
+
+    /**
+     * 显示老照片对应的像素
+     * @author 10405
+     */
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
+    public void showOldPixel(){
+
+        //计算椭圆参数
+        a = (int)(copyPicFromFile.getWidth() * 0.5f);
+        b = (int)(copyPicFromFile.getHeight() * 0.5f);
+        c = (int)Math.sqrt(Math.pow(a,2) - Math.pow(b,2));
+
+        int midx = (int)(copyPicFromFile.getWidth() * 0.5f);
+        int midy = (int)(copyPicFromFile.getHeight() * 0.5f);
+
+        float powa = a * a;
+        float powb = b * b;
+        int addtemp = (int)(top + ImgToolKits.addHeight * matrixValues[Matrix.MSCALE_Y]);
+
+        // TODO 这个循环开销太大了
+
+        for(int i = 0; i <= a; i++) {
+            for(int j = 0; j <= b; j++) {
+                int setX = i + left;
+                int setY = j + addtemp;
+
+                float t = ((float)(i-midx)*(i-midx))/powa + ((float)(j-midy)*(j-midy))/powb;
+                int xt = (a - i) * 2;
+                int yt = (b - j) * 2;
+                if(t <= 1) {
+                    try {
+                        photoBitmap.setPixel(setX, setY, copyPicFromFile.getPixel(i, j));
+                        photoBitmap.setPixel(setX + xt, setY, copyPicFromFile.getPixel(i + xt, j));
+                        photoBitmap.setPixel(setX + xt, setY + yt, copyPicFromFile.getPixel(i + xt, j + yt));
+                        photoBitmap.setPixel(setX, setY + yt, copyPicFromFile.getPixel(i, j + yt));
+                    }catch (IllegalArgumentException e) {
+                        // pass
+                    }
+                }
+            }
         }
+        photoView.setBackground(new BitmapDrawable(photoBitmap));
     }
 
 
@@ -250,96 +254,6 @@ public class HandleActivity extends AppCompatActivity  {
         shareButtonIntent.putExtra(Intent.EXTRA_STREAM, imageUri);
         shareButtonIntent.setType("image/*");
         startActivity(Intent.createChooser(shareButtonIntent, "分享到"));
-    }
-
-
-    /**
-     * 触摸监听
-     * @author 10405
-     */
-    OnTouchListener myTouchListener = new OnTouchListener() {
-        @Override
-        public boolean onTouch(View v, MotionEvent event) {
-            switch(event.getAction()) {
-                case MotionEvent.ACTION_MOVE:
-                    if(canDraw){
-                        try{
-                            showOldPixel(event);
-                        } catch (IllegalArgumentException e){
-                            // pass
-                        }
-                    }
-                case MotionEvent.ACTION_DOWN:
-                    canDraw = true;
-                    break;
-                case MotionEvent.ACTION_OUTSIDE:
-                case MotionEvent.ACTION_UP:
-                    canDraw = false;
-                    break;
-            }
-            return true;
-        }
-    };
-
-
-    /**
-     * 显示老照片对应的像素
-     * @param event
-     * @author 10405
-     */
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
-    public void showOldPixel(MotionEvent event)  throws  IllegalArgumentException{
-
-        int m = 80;
-        int x = (int) event.getX() - left;
-        int y = (int) event.getY() - top - ImgToolKits.addHeight;
-
-        if(inOldPicRegion(x, y)) {
-            double r = (float)m / 4 * 3;
-            for(int i = x - m; i < x + m; i++) {
-                for (int j = y - m; j < y + m; j++) {
-
-                    if(i <= 0 || i >= copyPicFromFile.getWidth()
-                            || j <= 0 || j >= copyPicFromFile.getHeight()) break;
-
-                    int setX = i + left;
-                    int setY = j + top + ImgToolKits.addHeight;
-                    if(setX <= 0 || setY <=0 || setX >= photoBitmap.getWidth()
-                            || setY >= photoBitmap.getHeight()) break;
-
-                    double distance = Math.sqrt(Math.pow((x - i), 2) + Math.pow((y - j), 2));
-                    if (distance <= r) {
-                        if (mark[i][j] < 1) {
-                            mark[i][j] += 1;
-                            photoBitmap.setPixel(setX, setY, copyPicFromFile.getPixel(i, j));
-                        }
-                    }else if(distance > r && distance <= m){
-                        if(setX > screenWidth || setY > screenWidth){
-                            break;
-                        }
-                        if(mark[i][j] < 1){
-                            photoBitmap.setPixel(setX, setY, Color.parseColor("#C4C4C4"));
-                        }
-                    }
-                }
-            }
-            photoView.setBackground(new BitmapDrawable(photoBitmap));
-        }
-    }
-
-
-    /**
-     * 判断是否在边缘图区域内
-     * @return
-     */
-    public boolean inOldPicRegion(float x, float y) {
-
-        if(x >= 0 && x <= copyPicFromFile.getWidth()
-                && y >= 0 && y <= copyPicFromFile.getHeight()){
-            return true;
-        }else {
-            return false;
-        }
     }
 
 }
