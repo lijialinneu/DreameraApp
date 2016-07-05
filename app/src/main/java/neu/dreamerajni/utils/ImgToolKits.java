@@ -48,7 +48,7 @@ public class ImgToolKits {
 
         int[] pix = new int [width * height];
         srcb.getPixels(pix, 0, width, 0, 0, width, height);
-        int[] resultPixes = OpenCVHelper.Canny(pix, width, height);
+        int[] resultPixes = OpenCVCanny.canny(pix, width, height);
 
         Bitmap b = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_4444);
 

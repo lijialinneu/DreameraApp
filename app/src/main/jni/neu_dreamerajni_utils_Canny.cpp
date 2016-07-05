@@ -2,7 +2,7 @@
 // Created by 10405 on 2016/7/2.
 //
 
-#include "neu_dreamerajni_utils_OpenCVHelper.h"
+#include "neu_dreamerajni_utils_OpenCVCanny.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <opencv2/opencv.hpp>
@@ -14,10 +14,10 @@ IplImage * change4channelTo3InIplImage(IplImage * src);
 
 extern  "C" {
 
-JNIEXPORT jintArray JNICALL Java_neu_dreamerajni_utils_OpenCVHelper_Canny
+JNIEXPORT jintArray JNICALL Java_neu_dreamerajni_utils_OpenCVCanny_canny
         (JNIEnv *env, jclass obj, jintArray buf, int w, int h);
 
-JNIEXPORT jintArray JNICALL Java_neu_dreamerajni_utils_OpenCVHelper_Canny
+JNIEXPORT jintArray JNICALL Java_neu_dreamerajni_utils_OpenCVCanny_canny
         (JNIEnv *env, jclass obj, jintArray buf, int w, int h) {
 
     jint *cbuf;
@@ -27,17 +27,17 @@ JNIEXPORT jintArray JNICALL Java_neu_dreamerajni_utils_OpenCVHelper_Canny
     }
 
     Mat myimg(h, w, CV_8UC4, (unsigned char*) cbuf);
-    IplImage image=IplImage(myimg);
+    IplImage image = IplImage(myimg);
     IplImage* image3channel = change4channelTo3InIplImage(&image);
 
-    IplImage* pCannyImage=cvCreateImage(cvGetSize(image3channel),IPL_DEPTH_8U,1);
+    IplImage* pCannyImage = cvCreateImage(cvGetSize(image3channel), IPL_DEPTH_8U, 1);
 
-    cvCanny(image3channel,pCannyImage,50,150,3);
+    cvCanny(image3channel, pCannyImage, 50, 150, 3);
 
-    int* outImage=new int[w*h];
-    for(int i=0;i<w*h;i++)
+    int* outImage = new int[w * h];
+    for(int i = 0;i < w * h; i++)
     {
-        outImage[i]=(int)pCannyImage->imageData[i];
+        outImage[i] = (int)pCannyImage->imageData[i];
     }
 
     int size = w * h;

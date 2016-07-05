@@ -16,7 +16,8 @@ endif
 
 LOCAL_MODULE := OpenCV
 
-LOCAL_SRC_FILES := neu_dreamerajni_utils_OpenCVHelper.cpp
+LOCAL_SRC_FILES := neu_dreamerajni_utils_Canny.cpp
+LOCAL_SRC_FILES += neu_dreamerajni_utils_Smooth.cpp
 
 LOCAL_LDLIBS +=  -lm -llog
 

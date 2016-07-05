@@ -27,6 +27,8 @@ import neu.dreamerajni.adapter.PhotoFiltersAdapter;
 import neu.dreamerajni.utils.AsyncGetDataUtil;
 import neu.dreamerajni.utils.FileCacheUtil;
 import neu.dreamerajni.utils.ImgToolKits;
+import neu.dreamerajni.utils.OpenCVCanny;
+import neu.dreamerajni.utils.OpenCVSmooth;
 import neu.dreamerajni.view.SquaredFrameLayout;
 
 
@@ -40,11 +42,11 @@ public class HandleActivity extends AppCompatActivity  {
     SquaredFrameLayout squaredFrameLayout;
     @Bind(R.id.rvFilters)
     RecyclerView rvFilters;
+
     private String id; //图片的id
     private Matrix matrix = new Matrix();//前一个Activity传回的矩阵参数
     private float[] matrixValues = new float[9]; //用于获取矩阵的参数
 
-    private ImageView borderView; //边缘图
     private Bitmap photoBitmap, copyPhotoBitmap; //新拍摄的照片和副本
     private Bitmap picFromFile, copyPicFromFile; //从文件中获取的源照片和副本
     private Bitmap borderBitmap; //边缘检测后的图片
@@ -53,13 +55,9 @@ public class HandleActivity extends AppCompatActivity  {
     private WindowManager wm;
     private float screenWidth; //屏幕宽度，相机预览画面的宽度与屏幕的宽度相等
     private float xTrans, yTrans, sTop, scale; // x位移、y位移、surfaceView距顶部的宽度、放缩倍数
-    private int left, top, right, bottom; // borderView的left、top、right、bottom值
+    private int left, top;// borderView的left、top
 
-//    private boolean borderShowed = false; //是否显示边缘
-//
-//
-    private int a, b, c;
-    private int p1x, p1y, p2x, p2y;
+    private int a, b, c; //椭圆的参数
     private int midx, midy;
     private int powa, powb;
 
@@ -85,11 +83,8 @@ public class HandleActivity extends AppCompatActivity  {
         setupPhotoFilters();
         initPhoto();
         initBorder();
-
         showOldPixel();
-
     }
-
 
 
     /**
@@ -124,17 +119,13 @@ public class HandleActivity extends AppCompatActivity  {
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     public void initBorder() {
 
-//        borderView = new ImageView(this);
         picFromFile = AsyncGetDataUtil.getPicFromFile(id); //从缓存中取出图片
 
         //先把图片变成初始大小，然后再通过matrix变换
         borderBitmap = ImgToolKits.initBorderPic(picFromFile, screenWidth, screenWidth);
-
         borderBitmap = Bitmap.createBitmap(borderBitmap,
                 0,0,borderBitmap.getWidth(),borderBitmap.getHeight(),
                 matrix, true);
-//        borderView.setImageBitmap(borderBitmap);
-
         borderWidth = borderBitmap.getWidth();
         borderHeight = borderBitmap.getHeight();
 
@@ -148,25 +139,7 @@ public class HandleActivity extends AppCompatActivity  {
 
         left = (int) xTrans;
         top = (int) (yTrans + photoView.getTop());
-        right = left + borderWidth;
-        bottom = top + borderHeight;
 
-//        SquaredFrameLayout.LayoutParams lp = new SquaredFrameLayout.LayoutParams(
-//                borderBitmap.getWidth(), borderBitmap.getHeight());
-//        lp.setMargins(left,top,right,bottom);
-//        squaredFrameLayout.addView(borderView, lp);
-
-//        borderView.setOnKeyListener(new View.OnKeyListener() {
-//            @Override
-//            public boolean onKey(View v, int keyCode, KeyEvent event) {
-//                switch (event.getKeyCode()) {
-//                    case KeyEvent.KEYCODE_BACK:
-//                        onBackPressed();
-//                }
-//                return false;
-//            }
-//        });
-//        borderShowed = true;
     }
 
 
@@ -174,20 +147,6 @@ public class HandleActivity extends AppCompatActivity  {
     public void clickBack() {
         onBackPressed();
     }
-
-
-//    @OnClick(R.id.btnShowBorder)
-//    public void showBorder() {
-//        if(borderShowed) { //如果已经显示出来了，则隐藏
-//            borderView.setVisibility(View.GONE);
-//            borderShowed = false;
-//        } else { //如果没有显示，则显示
-//            borderView.setImageBitmap(borderBitmap);
-//            borderView.setVisibility(View.VISIBLE);
-//            borderShowed = true;
-//        }
-//    }
-
 
     /**
      * 显示老照片对应的像素
@@ -209,7 +168,6 @@ public class HandleActivity extends AppCompatActivity  {
 
         int addtemp = (int)(top + ImgToolKits.addHeight * matrixValues[Matrix.MSCALE_Y]);
 
-        // TODO 这个循环开销太大了
         for(int i = 0; i <= b; i++) { // i表示列
             for(int j = 0; j <= a; j++) { // j 表示行
                 int setX = j + left;
@@ -233,19 +191,6 @@ public class HandleActivity extends AppCompatActivity  {
                             photoBitmap.setPixel(setX, setY + yt, copyPicFromFile.getPixel(j, i + yt));
                         }
 
-//                        if(!outScreen(setX, setY) && !outScreen(j, i)) {
-//                            photoBitmap.setPixel(setX, setY, copyPicFromFile.getPixel(j, i));
-//                        }
-//                        if(!outScreen(setX + xt, setY) && !outScreen(j + xt, i)) {
-//                            photoBitmap.setPixel(setX + xt, setY, copyPicFromFile.getPixel(j + xt, i));
-//                        }
-//                        if(!outScreen(setX + xt, setY + yt) && !outScreen(j + xt, i + yt)) {
-//                            photoBitmap.setPixel(setX + xt, setY + yt, copyPicFromFile.getPixel(j + xt, i + yt));
-//                        }
-//                        if(!outScreen(setX, setY + yt) && !outScreen(j, i + yt)) {
-//                            photoBitmap.setPixel(setX, setY + yt, copyPicFromFile.getPixel(j, i + yt));
-//                        }
-
                         if(t >= 0.98 && t < 0.99) {
                             j ++;
                         }else if(t >= 0.99 && t < 1){
@@ -257,6 +202,16 @@ public class HandleActivity extends AppCompatActivity  {
                 }
             }
         }
+
+
+//        int width = photoBitmap.getWidth();
+//        int height = photoBitmap.getHeight();
+//        int[] pix = new int [width * height];
+//        photoBitmap.getPixels(pix, 0, width, 0, 0, width, height);
+//        int[] resultPixes = OpenCVSmooth.smooth(pix, width, height);
+//        Bitmap b = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_4444);
+//        b.setPixels(resultPixes, 0, width, 0, 0, width, height);
+
         photoView.setBackground(new BitmapDrawable(photoBitmap));
     }
 
@@ -278,9 +233,6 @@ public class HandleActivity extends AppCompatActivity  {
      *  计算椭圆表达式
      */
     public float calculateEllipse(int i, int j) {
-
-
-
         return ((float)(j - midx) * (j - midx)) / powa + ((float)(i - midy) * (i - midy)) / powb;
     }
 
