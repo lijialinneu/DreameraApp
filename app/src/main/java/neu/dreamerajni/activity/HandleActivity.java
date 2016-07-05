@@ -63,6 +63,8 @@ public class HandleActivity extends AppCompatActivity  {
 //
     private int a, b, c;
     private int p1x, p1y, p2x, p2y;
+    private int midx, midy;
+    private int powa, powb;
 
 
 
@@ -202,37 +204,105 @@ public class HandleActivity extends AppCompatActivity  {
         b = (int)(copyPicFromFile.getHeight() * 0.5f);
         c = (int)Math.sqrt(Math.pow(a,2) - Math.pow(b,2));
 
-        int midx = (int)(copyPicFromFile.getWidth() * 0.5f);
-        int midy = (int)(copyPicFromFile.getHeight() * 0.5f);
+        midx = (int)(copyPicFromFile.getWidth() * 0.5f);
+        midy = (int)(copyPicFromFile.getHeight() * 0.5f);
 
-        float powa = a * a;
-        float powb = b * b;
+        powa = a * a;
+        powb = b * b;
+
+
         int addtemp = (int)(top + ImgToolKits.addHeight * matrixValues[Matrix.MSCALE_Y]);
 
         // TODO 这个循环开销太大了
 
-        for(int i = 0; i <= a; i++) {
-            for(int j = 0; j <= b; j++) {
-                int setX = i + left;
-                int setY = j + addtemp;
+        for(int i = 0; i <= b; i++) { // i表示列
+            for(int j = 0; j <= a; j++) { // j 表示行
+//                if(outScreen(i, j)) break;
 
-                float t = ((float)(i-midx)*(i-midx))/powa + ((float)(j-midy)*(j-midy))/powb;
-                int xt = (a - i) * 2;
-                int yt = (b - j) * 2;
+                int setX = j + left;
+                int setY = i + addtemp;
+//                if(outScreen(setX, setY)) break;
+
+                int xt = (a - j) * 2;
+                int yt = (b - i) * 2;
+
+                float t = calculateEllipse(i, j);
                 if(t <= 1) {
-                    try {
-                        photoBitmap.setPixel(setX, setY, copyPicFromFile.getPixel(i, j));
-                        photoBitmap.setPixel(setX + xt, setY, copyPicFromFile.getPixel(i + xt, j));
-                        photoBitmap.setPixel(setX + xt, setY + yt, copyPicFromFile.getPixel(i + xt, j + yt));
-                        photoBitmap.setPixel(setX, setY + yt, copyPicFromFile.getPixel(i, j + yt));
-                    }catch (IllegalArgumentException e) {
-                        // pass
+
+                    try{
+                        if(!outScreen(setX, setY) && !outScreen(j, i)) {
+                            photoBitmap.setPixel(setX, setY, copyPicFromFile.getPixel(j, i));
+                        }
+
+
+                        if(!outScreen(setX + xt, setY) && !outScreen(j + xt, i)) {
+                            photoBitmap.setPixel(setX + xt, setY, copyPicFromFile.getPixel(j + xt, i));
+                        }
+
+                        if(!outScreen(setX + xt, setY + yt) && !outScreen(j + xt, i + yt)) {
+                            photoBitmap.setPixel(setX + xt, setY + yt, copyPicFromFile.getPixel(j + xt, i + yt));
+                        }
+
+                        if(!outScreen(setX, setY + yt) && !outScreen(j, i + yt)) {
+                            photoBitmap.setPixel(setX, setY + yt, copyPicFromFile.getPixel(j, i + yt));
+                        }
+
+                    } catch (IllegalArgumentException e) {
+                        System.out.println("asdf try try");
                     }
                 }
             }
         }
+
+
+
+//        for(int i = 0; i <= a; i++) {
+//            for(int j = 0; j <= b; j++) {
+//                int setX = i + left;
+//                int setY = j + addtemp;
+//
+//                float t = ((float)(i-midx)*(i-midx))/powa + ((float)(j-midy)*(j-midy))/powb;
+//                int xt = (a - i) * 2;
+//                int yt = (b - j) * 2;
+//                if(t <= 1) {
+//                    try {
+//                        photoBitmap.setPixel(setX, setY, copyPicFromFile.getPixel(i, j));
+//                        photoBitmap.setPixel(setX + xt, setY, copyPicFromFile.getPixel(i + xt, j));
+//                        photoBitmap.setPixel(setX + xt, setY + yt, copyPicFromFile.getPixel(i + xt, j + yt));
+//                        photoBitmap.setPixel(setX, setY + yt, copyPicFromFile.getPixel(i, j + yt));
+//                    }catch (IllegalArgumentException e) {
+//                        // pass
+//                    }
+//                }
+//            }
+//        }
         photoView.setBackground(new BitmapDrawable(photoBitmap));
     }
+
+
+
+    /**
+     *  判断是否超出屏幕
+     *  @param i
+     *  @param j
+     */
+    public boolean outScreen(int i, int j) {
+        if(i < 0 || i > screenWidth || j < 0 || j > screenWidth) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     *  计算椭圆表达式
+     */
+    public float calculateEllipse(int i, int j) {
+
+
+
+        return ((float)(j - midx) * (j - midx)) / powa + ((float)(i - midy) * (i - midy)) / powb;
+    }
+
 
 
     @OnClick(R.id.btnAccept)
