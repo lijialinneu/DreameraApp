@@ -35,7 +35,7 @@ public class HttpConnectionUtil {
     public static  String result = "";
     public static String jsonString = "";
 
-    public static final String SERVERURL = "http://120.27.118.23:5678/cross/";
+    public static final String SERVERURL = "http://139.129.209.183:5678/cross/";
     public static final String PLACEURL = SERVERURL+"place/";
 
 
