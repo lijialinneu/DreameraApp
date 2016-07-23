@@ -20,4 +20,5 @@
     <!-- add on 2016-06-12 by 10405 -->
     <dimen name="popup_pic_margin">3dp</dimen>
     <dimen name="default_elevation">8dp</dimen>
+
 </resources>

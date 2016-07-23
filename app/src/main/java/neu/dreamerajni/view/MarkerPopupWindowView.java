@@ -10,6 +10,8 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.TranslateAnimation;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -37,12 +39,18 @@ import neu.dreamerajni.utils.FileCacheUtil;
 
 public class MarkerPopupWindowView extends View{
 
-    @Bind(R.id.id_close_popup) ImageButton closeButton; //关闭按钮
-    @Bind(R.id.id_marker_info) LinearLayout markerInfoLy; // 地图弹出窗口
-    @Bind(R.id.id_marker_name) TextView nameView; //弹出窗口中的名字
-    @Bind(R.id.cameraButton) FloatingActionButton cameraButton; //照相机对view
-    @Bind(R.id.id_gallery) LinearLayout gallery;
-    @Bind(R.id.id_scroll) HorizontalScrollView horizontalScrollView;
+    @Bind(R.id.id_close_popup)
+    ImageButton closeButton; //关闭按钮
+    @Bind(R.id.id_marker_info)
+    LinearLayout markerInfoLy; // 地图弹出窗口
+    @Bind(R.id.id_marker_name)
+    TextView nameView; //弹出窗口中的名字
+    @Bind(R.id.cameraButton)
+    FloatingActionButton cameraButton; //照相机对view
+    @Bind(R.id.id_gallery)
+    LinearLayout gallery;
+    @Bind(R.id.id_scroll)
+    HorizontalScrollView horizontalScrollView;
 
     public Activity activity;
     private LayoutInflater mInflater;
@@ -50,6 +58,7 @@ public class MarkerPopupWindowView extends View{
     private int len = 0; //图片list的长度
     private int lastSelectedTag = -1; //上一次选中的图片的索引
     private String intentPID; // 图片的ID作为参数传递到CameraActivity
+    private boolean NEVERPOPUP = true;
 
 
     /**
@@ -72,12 +81,20 @@ public class MarkerPopupWindowView extends View{
      */
     @OnClick(R.id.id_close_popup)
     public void onCloseButtonClick(){
-        markerInfoLy.setVisibility(View.GONE);
+
+        TranslateAnimation mShowAction = new TranslateAnimation(Animation.RELATIVE_TO_SELF, 0.0f,
+                Animation.RELATIVE_TO_SELF, 0.0f, Animation.RELATIVE_TO_SELF,
+                0.0f, Animation.RELATIVE_TO_SELF, 1.0f);
+        mShowAction.setDuration(500);
+        markerInfoLy.startAnimation(mShowAction);
+
         RelativeLayout.LayoutParams mapParams =
                 (RelativeLayout.LayoutParams) BMapControlUtil.map.getLayoutParams();
         mapParams.addRule(RelativeLayout.ABOVE, 0);
         BMapControlUtil.map.setLayoutParams(mapParams);
-        
+
+        markerInfoLy.setVisibility(View.GONE);
+        NEVERPOPUP = true;
     }
 
 
@@ -119,8 +136,17 @@ public class MarkerPopupWindowView extends View{
      */
     public void popupWindow(String name, String imgList) throws JSONException {
 
-//        cameraButton.setVisibility(View.GONE);
+        if(NEVERPOPUP) {
+            TranslateAnimation mShowAction = new TranslateAnimation(Animation.RELATIVE_TO_SELF, 0.0f,
+                    Animation.RELATIVE_TO_SELF, 0.0f, Animation.RELATIVE_TO_SELF,
+                    1.0f, Animation.RELATIVE_TO_SELF, 0.0f);
+            mShowAction.setDuration(300);
+            markerInfoLy.startAnimation(mShowAction);
+            NEVERPOPUP = false;
+        }
         markerInfoLy.setVisibility(View.VISIBLE);
+
+
         gallery.removeAllViews();//清除之前加载的view
         horizontalScrollView.scrollTo(0, 0);//回滚到初始状态
         nameView.setText(name);

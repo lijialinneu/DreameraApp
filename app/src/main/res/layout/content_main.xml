@@ -22,6 +22,12 @@
     </RelativeLayout>
 
     <!--底部弹出层-->
-    <include layout="@layout/popup_layout" />
+    <!--<RelativeLayout-->
+        <!--android:id="@+id/id_popup"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_alignParentBottom="true">-->
+        <include layout="@layout/popup_layout" />
+    <!--</RelativeLayout>-->
 
 </RelativeLayout>

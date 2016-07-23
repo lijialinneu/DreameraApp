@@ -3,6 +3,7 @@ package neu.dreamerajni.utils;
 import android.app.Activity;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 
 import com.baidu.mapapi.map.BaiduMap;
@@ -66,9 +67,6 @@ public class BMapControlUtil {
         map = (RelativeLayout) activity.findViewById(R.id.id_map);
         baiduMap = mapView.getMap();
 
-//        MapStatusUpdate msu = MapStatusUpdateFactory.zoomTo(9.0f);
-//        baiduMap.setMapStatus(msu);
-
         LatLng latLng = new LatLng(41.802273,123.417315);//将地图移至沈阳市
         MapStatusUpdate u = MapStatusUpdateFactory.newLatLng(latLng);
         baiduMap.animateMapStatus(u);
@@ -108,6 +106,8 @@ public class BMapControlUtil {
                         (String) marker.getExtraInfo().get("name"),
                         (String) marker.getExtraInfo().get("cross_pictures")
                 );// 弹出InfoWindow
+
+
                 RelativeLayout.LayoutParams mapParams =
                         (RelativeLayout.LayoutParams) map.getLayoutParams();
                 mapParams.addRule(RelativeLayout.ABOVE, R.id.id_marker_info);
