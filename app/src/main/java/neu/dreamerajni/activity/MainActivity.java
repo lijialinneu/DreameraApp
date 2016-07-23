@@ -2,6 +2,7 @@ package neu.dreamerajni.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -10,38 +11,41 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.baidu.mapapi.SDKInitializer;
 
+import butterknife.Bind;
+import butterknife.ButterKnife;
 import neu.dreamerajni.R;
+import neu.dreamerajni.utils.APPUtils;
 import neu.dreamerajni.utils.BMapControlUtil;
 import neu.dreamerajni.utils.HttpConnectionUtil;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
+
     private BMapControlUtil bMapControlUtil = null;
+
+    @Nullable
+    @Bind(R.id.toolbar)
+    Toolbar toolbar;
+
+    @Nullable
+    @Bind(R.id.ivLogo)
+    ImageView ivLogo;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        //在使用SDK各组件之前初始化context信息，传入ApplicationContext
-        // 注意该方法要再setContentView方法之前实现
         SDKInitializer.initialize(getApplicationContext());
-
-        if (!HttpConnectionUtil.isNetworkAvailable(MainActivity.this)) {//检查是否有网络
-            Toast.makeText(getApplicationContext(),
-                    "当前没有可用网络！", Toast.LENGTH_LONG).show();//没网提醒
-            Intent intent = new Intent(); //跳转到NoNetActivity
-            intent.setClass(MainActivity.this, NoNetActivity.class);
-            MainActivity.this.startActivity(intent);
-        }
-
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        ButterKnife.bind(this);
         setSupportActionBar(toolbar);
+
+        startIntroAnimation(); // 开始toolbar的动画
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -55,6 +59,21 @@ public class MainActivity extends AppCompatActivity
         //调用BMap控件
         bMapControlUtil = new BMapControlUtil(this);
     }
+
+    public void startIntroAnimation() {
+        int actionbarSize = APPUtils.dpToPx(56);
+        toolbar.setTranslationY(-actionbarSize);
+        ivLogo.setTranslationY(-actionbarSize);
+        toolbar.animate()
+                .translationY(0)
+                .setDuration(300)
+                .setStartDelay(300);
+        ivLogo.animate()
+                .translationY(0)
+                .setDuration(300)
+                .setStartDelay(400);
+    }
+
 
     @Override
     public void onBackPressed() {

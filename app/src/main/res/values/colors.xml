@@ -3,6 +3,8 @@
     <color name="colorPrimary">#3F3F3F</color>
     <color name="colorPrimaryDark">#1F1F1F</color>
     <color name="colorAccent">#5F5F5F</color>
+    <color name="colorBanner">#FFFFFF</color>
+
 
     <color name="popupWindow">#CC4e5a6b</color>
 
