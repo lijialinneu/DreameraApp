@@ -157,7 +157,7 @@ public class MarkerPopupWindowView extends View{
         @Override
         public PhotoListAdapter.PhotoListViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             View view = LayoutInflater.from(context).inflate(R.layout.gallery_layout, parent, false);
-            return new PhotoListAdapter.PhotoListViewHolder(view);
+            return new PhotoListViewHolder(view);
         }
 
         @Override

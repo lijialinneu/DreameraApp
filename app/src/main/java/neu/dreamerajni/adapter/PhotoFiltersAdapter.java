@@ -1,15 +1,14 @@
 package neu.dreamerajni.adapter;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.drawable.Drawable;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.ImageView;
 
+import butterknife.Bind;
 import butterknife.ButterKnife;
 import neu.dreamerajni.R;
 
@@ -38,7 +37,14 @@ public class PhotoFiltersAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     }
 
     @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position) {
+    public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, final int position) {
+        PhotoFilterViewHolder holder = (PhotoFilterViewHolder) viewHolder;
+        holder.filterImageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                System.out.println("asdf " + position);
+            }
+        });
     }
 
     @Override
@@ -47,6 +53,9 @@ public class PhotoFiltersAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     }
 
     public static class PhotoFilterViewHolder extends RecyclerView.ViewHolder {
+
+        @Bind(R.id.id_filterImage)
+        ImageView filterImageView;
 
         public PhotoFilterViewHolder(View view) {
             super(view);

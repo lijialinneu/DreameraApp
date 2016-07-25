@@ -107,7 +107,6 @@ public class BMapControlUtil {
                         (String) marker.getExtraInfo().get("cross_pictures")
                 );// 弹出InfoWindow
 
-
                 RelativeLayout.LayoutParams mapParams =
                         (RelativeLayout.LayoutParams) map.getLayoutParams();
                 mapParams.addRule(RelativeLayout.ABOVE, R.id.id_marker_info);
