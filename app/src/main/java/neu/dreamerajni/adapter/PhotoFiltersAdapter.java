@@ -12,11 +12,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import neu.dreamerajni.R;
-import neu.dreamerajni.filter.BlackFilter;
+import neu.dreamerajni.filter.BaseFilter;
+import neu.dreamerajni.filter.FilterFactory;
 
 /**
  * Created by froger_mcs on 11.11.14.
@@ -24,11 +26,11 @@ import neu.dreamerajni.filter.BlackFilter;
 public class PhotoFiltersAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private Context context;
-    private int itemsCount = 6;
+    private int itemsCount = 8;
 
-    private SurfaceView photoView, newPhotoView;
+    private SurfaceView photoView;
     private Bitmap photoBitmap;
-    public Bitmap dstBitmap;
+    public static Bitmap dstBitmap = null;
 
     public PhotoFiltersAdapter(Context context,SurfaceView photoView, Bitmap photoBitmap) {
         this.context = context;
@@ -41,7 +43,7 @@ public class PhotoFiltersAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         final View view = LayoutInflater.from(context).inflate(R.layout.item_photo_filter, parent, false);
         WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
         WindowManager wm =  (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-        lp.width = wm.getDefaultDisplay().getWidth()/3;
+        lp.width = wm.getDefaultDisplay().getWidth()/4;
         view.setLayoutParams(lp);
         return new PhotoFilterViewHolder(view);
     }
@@ -49,11 +51,13 @@ public class PhotoFiltersAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, final int position) {
         PhotoFilterViewHolder holder = (PhotoFilterViewHolder) viewHolder;
+        final FilterFactory ff = new FilterFactory(photoBitmap);
+        holder.filterTextView.setText(ff.getFilterType(position));
         holder.filterImageView.setOnClickListener(new View.OnClickListener() {
             @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
             @Override
             public void onClick(View v) {
-                BlackFilter bf = new BlackFilter(photoBitmap);
+                BaseFilter bf = ff.createFilter(position);
                 dstBitmap = bf.filterBitmap();
                 photoView.setBackground(new BitmapDrawable(dstBitmap));
             }
@@ -69,6 +73,8 @@ public class PhotoFiltersAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
         @Bind(R.id.id_filterImage)
         ImageView filterImageView;
+        @Bind(R.id.id_filterText)
+        TextView filterTextView;
 
         public PhotoFilterViewHolder(View view) {
             super(view);

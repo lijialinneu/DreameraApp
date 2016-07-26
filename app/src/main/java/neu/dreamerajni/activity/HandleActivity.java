@@ -129,7 +129,8 @@ public class HandleActivity extends AppCompatActivity  {
         borderHeight = borderBitmap.getHeight();
 
         copyPicFromFile = ImgToolKits.changeBitmapSize(
-                picFromFile, borderWidth, borderHeight - 2 * ImgToolKits.addHeight * matrixValues[Matrix.MSCALE_Y]);
+                picFromFile, borderWidth,
+                borderHeight - 2 * ImgToolKits.addHeight * matrixValues[Matrix.MSCALE_Y]);
 
         float[] matrixValues = new float[9];
         matrix.getValues(matrixValues);
@@ -205,6 +206,7 @@ public class HandleActivity extends AppCompatActivity  {
 
         // photoBitmap width = 1080
         // photoBitmap height = 1080
+        copyPhotoBitmap = photoBitmap; //保存一份副本
         photoView.setBackground(new BitmapDrawable(photoBitmap));
     }
 
@@ -237,8 +239,14 @@ public class HandleActivity extends AppCompatActivity  {
         String path = FileCacheUtil.EDITPATH; //存储JSON的路径
         FileCacheUtil fileCacheUtil = new FileCacheUtil(path);
 
+
+
         try {
-            fileCacheUtil.savePicture(photoBitmap, "Edit");
+            if(PhotoFiltersAdapter.dstBitmap != null) {
+                fileCacheUtil.savePicture(PhotoFiltersAdapter.dstBitmap, "Edit");
+            }else {
+                fileCacheUtil.savePicture(photoBitmap, "Edit");
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -251,4 +259,12 @@ public class HandleActivity extends AppCompatActivity  {
         shareButtonIntent.setType("image/*");
         startActivity(Intent.createChooser(shareButtonIntent, "分享到"));
     }
+
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
+    @OnClick(R.id.btnRedo)
+    public void redo() { //撤销
+        PhotoFiltersAdapter.dstBitmap = null;
+        photoView.setBackground(new BitmapDrawable(copyPhotoBitmap));
+    }
+
 }
