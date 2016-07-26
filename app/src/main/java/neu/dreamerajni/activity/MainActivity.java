@@ -26,16 +26,14 @@ import neu.dreamerajni.utils.HttpConnectionUtil;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
-    private BMapControlUtil bMapControlUtil = null;
-
     @Nullable
     @Bind(R.id.toolbar)
     Toolbar toolbar;
-
     @Nullable
     @Bind(R.id.ivLogo)
     ImageView ivLogo;
 
+    private BMapControlUtil bMapControlUtil = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,7 +71,6 @@ public class MainActivity extends AppCompatActivity
                 .setDuration(300)
                 .setStartDelay(400);
     }
-
 
     @Override
     public void onBackPressed() {
@@ -132,21 +129,6 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-
-//    @Override
-//    protected void onStart(){
-//        //TODO:开启图层定位
-//        super.onStart();
-//    }
-//
-//
-//    @Override
-//    protected void onStop(){
-//        //TODO:停止图层定位
-//        super.onStop();
-//    }
-
-
     @Override
     protected void onDestroy(){
         super.onDestroy();
@@ -162,8 +144,6 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onResume(){
         super.onResume();
-        // 在activity执行onResume时执行mMapView. onResume ()，
-        // 实现地图生命周期管理
         if(bMapControlUtil !=null){
             bMapControlUtil.mapView.onResume();
         }
@@ -173,8 +153,6 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onPause(){
         super.onPause();
-        // 在activity执行onPause时执行mMapView. onPause ()，
-        // 实现地图生命周期管理
         if(bMapControlUtil !=null){
             bMapControlUtil.mapView.onPause();
         }

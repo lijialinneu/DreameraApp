@@ -12,7 +12,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.LayoutInflater;
 import android.view.SurfaceView;
+import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.ImageView;
 
@@ -23,7 +26,8 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import neu.dreamerajni.R;
-import neu.dreamerajni.adapter.PhotoFiltersAdapter;
+//import neu.dreamerajni.adapter.PhotoFiltersAdapter;
+import neu.dreamerajni.filter.BlackFilter;
 import neu.dreamerajni.utils.AsyncGetDataUtil;
 import neu.dreamerajni.utils.FileCacheUtil;
 import neu.dreamerajni.utils.ImgToolKits;
@@ -80,10 +84,10 @@ public class HandleActivity extends AppCompatActivity  {
         wm = (WindowManager) this.getSystemService(Context.WINDOW_SERVICE);
         screenWidth = wm.getDefaultDisplay().getWidth();
 
-        setupPhotoFilters();
         initPhoto();
         initBorder();
         showOldPixel();
+        setupPhotoFilters(); //显示过滤图片列表
     }
 
 
@@ -91,8 +95,10 @@ public class HandleActivity extends AppCompatActivity  {
      * 初始化拍摄照片
      * @author 10405
      */
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     private void setupPhotoFilters() {
-        PhotoFiltersAdapter photoFiltersAdapter = new PhotoFiltersAdapter(this);
+        PhotoFiltersAdapter photoFiltersAdapter =
+                new PhotoFiltersAdapter(this, photoBitmap);
         rvFilters.setHasFixedSize(true);
         rvFilters.setAdapter(photoFiltersAdapter);
         rvFilters.setLayoutManager(
@@ -168,16 +174,28 @@ public class HandleActivity extends AppCompatActivity  {
 
         int addtemp = (int)(top + ImgToolKits.addHeight * matrixValues[Matrix.MSCALE_Y]);
 
-        for(int i = 0; i <= b; i++) { // i表示列
-            for(int j = 0; j <= a; j++) { // j 表示行
+        for(int i = 0; i <= b; i++ ) { // i表示列
+            boolean flag = false;
+            for(int j = 0; j <= a; j+=2) { // j 表示行
                 int setX = j + left;
                 int setY = i + addtemp;
                 int xt = (a - j) * 2;
                 int yt = (b - i) * 2;
-                float t = calculateEllipse(i, j);
+
+                float t = 0;
+                if(j == 0) { flag = true;}
+                if(flag) {
+                    t = calculateEllipse(i, j);
+                }
 
                 if(t <= 1) {
+                    flag = true;
                     try{
+//                        if(t >= 0.8) {
+//                            i ++;
+//                            j ++;
+//                        }
+
                         if(!outScreen(setX, setY)) {
                             photoBitmap.setPixel(setX, setY, copyPicFromFile.getPixel(j, i));
                         }
@@ -190,12 +208,6 @@ public class HandleActivity extends AppCompatActivity  {
                         if(!outScreen(setX, setY + yt)) {
                             photoBitmap.setPixel(setX, setY + yt, copyPicFromFile.getPixel(j, i + yt));
                         }
-
-                        if(t >= 0.98 && t < 0.99) {
-                            j ++;
-                        }else if(t >= 0.99 && t < 1){
-                            j += 2;
-                        }
                     } catch (IllegalArgumentException e) {
 //                        e.printStackTrace(); //pass
                     }
@@ -203,15 +215,8 @@ public class HandleActivity extends AppCompatActivity  {
             }
         }
 
-
-//        int width = photoBitmap.getWidth();
-//        int height = photoBitmap.getHeight();
-//        int[] pix = new int [width * height];
-//        photoBitmap.getPixels(pix, 0, width, 0, 0, width, height);
-//        int[] resultPixes = OpenCVSmooth.smooth(pix, width, height);
-//        Bitmap b = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_4444);
-//        b.setPixels(resultPixes, 0, width, 0, 0, width, height);
-
+        // photoBitmap width = 1080
+        // photoBitmap height = 1080
         photoView.setBackground(new BitmapDrawable(photoBitmap));
     }
 
@@ -258,5 +263,63 @@ public class HandleActivity extends AppCompatActivity  {
         shareButtonIntent.setType("image/*");
         startActivity(Intent.createChooser(shareButtonIntent, "分享到"));
     }
+
+    public class PhotoFiltersAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+
+        private Context context;
+        private int itemsCount = 6;
+
+        //    private SurfaceView photoView;
+        private Bitmap photoBitmap;
+        public Bitmap dstBitmap;
+
+        public PhotoFiltersAdapter(Context context, Bitmap photoBitmap) {
+            this.context = context;
+            this.photoBitmap = photoBitmap;
+        }
+
+        @Override
+        public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            final View view = LayoutInflater.from(context).inflate(R.layout.item_photo_filter, parent, false);
+            WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
+            WindowManager wm =  (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+            lp.width = wm.getDefaultDisplay().getWidth()/3;
+            view.setLayoutParams(lp);
+            return new PhotoFiltersAdapter.PhotoFilterViewHolder(view);
+        }
+
+        @Override
+        public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, final int position) {
+            PhotoFiltersAdapter.PhotoFilterViewHolder holder = (PhotoFiltersAdapter.PhotoFilterViewHolder) viewHolder;
+            holder.filterImageView.setOnClickListener(new View.OnClickListener() {
+                @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
+                @Override
+                public void onClick(View v) {
+                    BlackFilter bf = new BlackFilter(photoBitmap);
+                    dstBitmap = bf.filterBitmap();
+                    photoView.setBackground(new BitmapDrawable(dstBitmap));
+                }
+            });
+        }
+
+        @Override
+        public int getItemCount() {
+            return itemsCount;
+        }
+
+        public class PhotoFilterViewHolder extends RecyclerView.ViewHolder {
+
+            @Bind(R.id.id_filterImage)
+            ImageView filterImageView;
+
+            public PhotoFilterViewHolder(View view) {
+                super(view);
+                ButterKnife.bind(this, view);
+            }
+        }
+    }
+
+
+
 
 }
