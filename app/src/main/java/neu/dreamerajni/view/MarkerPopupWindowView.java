@@ -98,6 +98,7 @@ public class MarkerPopupWindowView extends View{
         BMapControlUtil.map.setLayoutParams(mapParams);
 
         markerInfoLy.setVisibility(View.GONE);
+        cameraButton.setVisibility(INVISIBLE);
         NEVERPOPUP = true;
     }
 
