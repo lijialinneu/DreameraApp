@@ -28,6 +28,7 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import neu.dreamerajni.R;
 import neu.dreamerajni.activity.CameraActivity;
+import neu.dreamerajni.adapter.PhotoListAdapter;
 import neu.dreamerajni.utils.AsyncGetDataUtil;
 import neu.dreamerajni.utils.BMapControlUtil;
 
@@ -43,17 +44,21 @@ public class MarkerPopupWindowView extends View{
     LinearLayout markerInfoLy; // 地图弹出窗口
     @Bind(R.id.id_marker_name)
     TextView nameView; //弹出窗口中的名字
-    @Bind(R.id.cameraButton)
-    FloatingActionButton cameraButton; //照相机对view
-    @Bind(R.id.id_gallery)
-    RecyclerView gallery;
+
+//    @Bind(R.id.cameraButton)
+//    FloatingActionButton cameraButton; //照相机对view
+//    @Bind(R.id.id_gallery)
+//    RecyclerView gallery;
+
+    private static FloatingActionButton cameraButton;
+    private static RecyclerView gallery;
+    private static int len = 0; //图片list的长度
+    private static int lastSelectedTag = -1; //上一次选中的图片的索引
+    private static String intentPID; // 图片的ID作为参数传递到CameraActivity
 
     public Activity activity;
     private LayoutInflater mInflater;
     private AsyncGetPicTask asyncGetPicTask;
-    private int len = 0; //图片list的长度
-    private int lastSelectedTag = -1; //上一次选中的图片的索引
-    private String intentPID; // 图片的ID作为参数传递到CameraActivity
     private boolean NEVERPOPUP = true;
     private String noDataTip = "该处暂无数据";
 
@@ -68,6 +73,10 @@ public class MarkerPopupWindowView extends View{
         this.activity = (Activity) context;
         ButterKnife.bind(this, activity);
         mInflater = LayoutInflater.from(activity);
+
+        cameraButton = (FloatingActionButton) activity.findViewById(R.id.cameraButton);
+        gallery = (RecyclerView) activity.findViewById(R.id.id_gallery);
+
     }
 
 
@@ -140,72 +149,11 @@ public class MarkerPopupWindowView extends View{
         }
     }
 
-
-    class PhotoListAdapter extends RecyclerView.Adapter<PhotoListAdapter.PhotoListViewHolder> {
-
-        private Context context;
-        private ArrayList<HashMap<String, Object>> picList;
-        private int itemsCount;
-        private String pictureUrl, pictureId;
-
-        public PhotoListAdapter(Context context, ArrayList<HashMap<String, Object>> picList) {
-            this.context = context;
-            this.picList = picList;
-            itemsCount = picList.size();
-        }
-
-        @Override
-        public PhotoListAdapter.PhotoListViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            View view = LayoutInflater.from(context).inflate(R.layout.gallery_layout, parent, false);
-            return new PhotoListViewHolder(view);
-        }
-
-        @Override
-        public void onBindViewHolder(PhotoListAdapter.PhotoListViewHolder viewHolder, int position) {
-            pictureUrl = picList.get(position).get("url").toString();
-            pictureId = picList.get(position).get("id").toString();
-
-            viewHolder.dateTextView.setText(picList.get(position).get("date").toString());
-            viewHolder.imgView.setImageResource(R.mipmap.ic_nothing);//先都设置为默认图片，
-            viewHolder.imgView.setTag(position);  //设置tag
-
-            viewHolder.selectImgView.setImageResource(R.mipmap.ic_selected); //设置选中的对号图片
-            viewHolder.selectImgView.setTag(position + "a");
-            viewHolder.imgView.setOnClickListener(new MyImgClickListener(pictureId));
-
-            if(pictureUrl != "null"){
-                asyncGetPicTask = new AsyncGetPicTask(viewHolder.imgView, pictureUrl, pictureId);
-                asyncGetPicTask.execute();
-            }
-        }
-
-        @Override
-        public int getItemCount() {
-            return itemsCount;
-        }
-
-        class PhotoListViewHolder extends RecyclerView.ViewHolder {
-
-            @Bind(R.id.id_marker_img)
-            ImageView imgView;
-            @Bind(R.id.id_selected)
-            ImageView selectImgView;
-            @Bind(R.id.id_date)
-            TextView dateTextView;
-
-            public PhotoListViewHolder(View view) {
-                super(view);
-                ButterKnife.bind(this, view);
-            }
-        }
-    }
-
-
     /**
      * 图片点击事件
      * @author 10405
      */
-    public class MyImgClickListener implements View.OnClickListener {
+    public static class MyImgClickListener implements View.OnClickListener {
 
         private String pictureId;
 
@@ -230,7 +178,7 @@ public class MarkerPopupWindowView extends View{
      * 删除已有的图片右上角标注
      * @author 10405
      */
-    private void deleteOldSelected(){
+    private static void deleteOldSelected(){
         if(lastSelectedTag != -1) {
             if(len > lastSelectedTag){
                 ImageView lastSelectedView = (ImageView) gallery.findViewWithTag(lastSelectedTag + "a");
@@ -244,7 +192,7 @@ public class MarkerPopupWindowView extends View{
      * 异步加载图片的内部类
      * @author 10405
      */
-    public class AsyncGetPicTask extends AsyncTask <Void, Void, Void>{
+    public static class AsyncGetPicTask extends AsyncTask <Void, Void, Void>{
 
         private ImageView imgView;
         private Bitmap pictureBitmap;
