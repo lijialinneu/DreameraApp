@@ -51,15 +51,16 @@ public class MarkerPopupWindowView extends View{
 
     private static FloatingActionButton cameraButton;
     private static RecyclerView gallery;
-    private static int len = 0; //图片list的长度
-    private static int lastSelectedTag = -1; //上一次选中的图片的索引
+//    private static int len = 0; //图片list的长度
+//    private static int lastSelectedTag = -1; //上一次选中的图片的索引
     private static String intentPID; // 图片的ID作为参数传递到CameraActivity
 
     public Activity activity;
     private LayoutInflater mInflater;
-    private AsyncGetPicTask asyncGetPicTask;
+//    private AsyncGetPicTask asyncGetPicTask;
     private boolean NEVERPOPUP = true;
     private String noDataTip = "该处暂无数据";
+    private static ImageView flagView;
 
     /**
      * 构造函数
@@ -139,7 +140,7 @@ public class MarkerPopupWindowView extends View{
             nameView.setText(name);
             final ArrayList<HashMap<String, Object>> picList =
                     AsyncGetDataUtil.decodeCrossPicturesJsonToPoint(imgList);//解析JSON数据
-            len = picList.size();
+//            len = picList.size();
             PhotoListAdapter photoListAdapter = new PhotoListAdapter(activity, picList);
             gallery.setVisibility(VISIBLE);
             gallery.setHasFixedSize(true);
@@ -156,21 +157,28 @@ public class MarkerPopupWindowView extends View{
     public static class MyImgClickListener implements View.OnClickListener {
 
         private String pictureId;
+        private String url;
 
-        public MyImgClickListener(String pictureId){
+        public MyImgClickListener(String pictureId, String url){
             this.pictureId = pictureId;
+            this.url = url;
         }
 
         @Override
         public void onClick(View v) {
             deleteOldSelected(); // 清除以前选中图片的对号小图标
             int i =  (int) v.getTag(); // 显示对号小图标
-            ImageView flag = (ImageView) gallery.findViewWithTag(i+"a");
-            flag.setVisibility(View.VISIBLE);
-            lastSelectedTag = i;
+
+//            ImageView flag = (ImageView) gallery.findViewWithTag(i + "a");
+//            flag.setVisibility(View.VISIBLE);
+
+            flagView = (ImageView) gallery.findViewWithTag(i + "a");
+            flagView.setVisibility(VISIBLE);
+
+//            lastSelectedTag = i;
             cameraButton.setVisibility(View.VISIBLE);
 
-            intentPID = pictureId;
+            intentPID = pictureId; //设置Activity间传递的参数
         }
     }
 
@@ -179,12 +187,17 @@ public class MarkerPopupWindowView extends View{
      * @author 10405
      */
     private static void deleteOldSelected(){
-        if(lastSelectedTag != -1) {
-            if(len > lastSelectedTag){
-                ImageView lastSelectedView = (ImageView) gallery.findViewWithTag(lastSelectedTag + "a");
-                lastSelectedView.setVisibility(View.INVISIBLE);
-            }
+        if(flagView != null) {
+            flagView.setVisibility(GONE);
         }
+//        if(lastSelectedTag != -1) {
+//            if(len > lastSelectedTag){
+//                ImageView lastSelectedView = (ImageView) gallery.findViewWithTag(lastSelectedTag + "a");
+//                if(lastSelectedView != null) {
+//                    lastSelectedView.setVisibility(View.GONE);
+//                }
+//            }
+//        }
     }
 
 
