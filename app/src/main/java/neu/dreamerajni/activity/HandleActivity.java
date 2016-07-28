@@ -32,7 +32,6 @@ import neu.dreamerajni.view.SquaredFrameLayout;
 @SuppressWarnings("deprecation")
 public class HandleActivity extends AppCompatActivity  {
 
-
     @Bind(R.id.photoView)
     SurfaceView photoView; //拍摄的照片
     @Bind(R.id.squareFrameLayout)
@@ -59,7 +58,6 @@ public class HandleActivity extends AppCompatActivity  {
     private int powa, powb;
 
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -77,8 +75,8 @@ public class HandleActivity extends AppCompatActivity  {
         wm = (WindowManager) this.getSystemService(Context.WINDOW_SERVICE);
         screenWidth = wm.getDefaultDisplay().getWidth();
 
-        initPhoto();
-        initBorder();
+        initPhoto(); //初始化拍摄照片
+        initBorder(); //初始化边缘图
         showOldPixel();
         setupPhotoFilters(); //显示过滤图片列表
     }
@@ -121,16 +119,23 @@ public class HandleActivity extends AppCompatActivity  {
         picFromFile = AsyncGetDataUtil.getPicFromFile(id); //从缓存中取出图片
 
         //先把图片变成初始大小，然后再通过matrix变换
-        borderBitmap = ImgToolKits.initBorderPic(picFromFile, screenWidth, screenWidth);
+        borderBitmap = ImgToolKits.initBorderPic(picFromFile, screenWidth, screenWidth, false);
         borderBitmap = Bitmap.createBitmap(borderBitmap,
                 0,0,borderBitmap.getWidth(),borderBitmap.getHeight(),
                 matrix, true);
         borderWidth = borderBitmap.getWidth();
         borderHeight = borderBitmap.getHeight();
 
-        copyPicFromFile = ImgToolKits.changeBitmapSize(
-                picFromFile, borderWidth,
-                borderHeight - 2 * ImgToolKits.addHeight * matrixValues[Matrix.MSCALE_Y]);
+        if(judgePicStyle(picFromFile)) {
+            copyPicFromFile = ImgToolKits.changeBitmapSize(
+                    picFromFile, borderWidth,
+                    borderHeight - 2 * ImgToolKits.addHeight * matrixValues[Matrix.MSCALE_Y]);
+        } else {
+            copyPicFromFile = ImgToolKits.changeBitmapSize(
+                    picFromFile, borderWidth - 2 * ImgToolKits.addHeight * matrixValues[Matrix.MSCALE_X],
+                    borderHeight);
+        }
+
 
         float[] matrixValues = new float[9];
         matrix.getValues(matrixValues);
@@ -139,14 +144,13 @@ public class HandleActivity extends AppCompatActivity  {
 
         left = (int) xTrans;
         top = (int) (yTrans + photoView.getTop());
-
     }
-
 
     @OnClick(R.id.btnBack)
     public void clickBack() {
         onBackPressed();
     }
+
 
     /**
      * 显示老照片对应的像素
@@ -154,63 +158,68 @@ public class HandleActivity extends AppCompatActivity  {
      */
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     public void showOldPixel(){
-
-        //计算椭圆参数
-        a = (int)(copyPicFromFile.getWidth() * 0.5f);
-        b = (int)(copyPicFromFile.getHeight() * 0.5f);
-        c = (int)Math.sqrt(Math.pow(a,2) - Math.pow(b,2));
-
-        midx = (int)(copyPicFromFile.getWidth() * 0.5f);
-        midy = (int)(copyPicFromFile.getHeight() * 0.5f);
-
-        powa = a * a;
-        powb = b * b;
-
-        int addtemp = (int)(top + ImgToolKits.addHeight * matrixValues[Matrix.MSCALE_Y]);
+        calEllipseParam(copyPicFromFile); //计算椭圆参数
+        int addtemp = 0; //计算偏移量
+        if(judgePicStyle(picFromFile)) {
+            addtemp = (int) (top + ImgToolKits.addHeight * matrixValues[Matrix.MSCALE_Y]);
+        } else {
+            addtemp = (int) (left + ImgToolKits.addHeight * matrixValues[Matrix.MSCALE_X]);
+        }
 
         for(int i = 0; i <= b; i++ ) { // i表示列
             boolean flag = false;
-            for(int j = 0; j <= a; j+=2) { // j 表示行
-                int setX = j + left;
-                int setY = i + addtemp;
+            int setX,setY;
+            for(int j = 0; j <= a; j += 2) { // j 表示行
+                if(judgePicStyle(picFromFile)) {
+                    setX = j + left;
+                    setY = i + addtemp;
+                } else {
+                    setX = j + addtemp;
+                    setY = i + top;
+                }
                 int xt = (a - j) * 2;
                 int yt = (b - i) * 2;
 
-                float t = 0;
+                float t = 0; //减少计算次数
                 if(j == 0) { flag = true;}
-                if(flag) {
-                    t = calculateEllipse(i, j);
-                }
+                if(flag) { t = calculateEllipse(i, j);}
 
-                if(t <= 1) {
+                if(t <= 1) { // t <= 1 表示在椭圆范围内
                     flag = true;
-                    try {
-                        if(!outScreen(setX, setY)) {
-                            photoBitmap.setPixel(setX, setY, copyPicFromFile.getPixel(j, i));
-                        }
-                        if(!outScreen(setX + xt, setY)) {
-                            photoBitmap.setPixel(setX + xt, setY, copyPicFromFile.getPixel(j + xt, i));
-                        }
-                        if(!outScreen(setX + xt, setY + yt)) {
-                            photoBitmap.setPixel(setX + xt, setY + yt, copyPicFromFile.getPixel(j + xt, i + yt));
-                        }
-                        if(!outScreen(setX, setY + yt)) {
-                            photoBitmap.setPixel(setX, setY + yt, copyPicFromFile.getPixel(j, i + yt));
-                        }
-                    } catch (IllegalArgumentException e) {
-//                        e.printStackTrace(); //pass
-                    }
+                    int[] param = {setX, setY, i, j, xt, yt};
+                    pixelReplace(param);
                 }
             }
         }
-
-        // photoBitmap width = 1080
-        // photoBitmap height = 1080
         copyPhotoBitmap = photoBitmap; //保存一份副本
         photoView.setBackground(new BitmapDrawable(photoBitmap));
     }
 
+    /**
+     * 计算椭圆参数
+     */
+    public void calEllipseParam(Bitmap bitmap) {
+        a = (int)(bitmap.getWidth() * 0.5f);
+        b = (int)(bitmap.getHeight() * 0.5f);
+        c = (int)Math.sqrt(Math.pow(a,2) - Math.pow(b,2));
 
+        midx = (int)(bitmap.getWidth() * 0.5f);
+        midy = (int)(bitmap.getHeight() * 0.5f);
+        powa = a * a;
+        powb = b * b;
+    }
+
+    /**
+     * 判断是宽 > 高的图片，还是高 > 宽的图片
+     * @param bitmap
+     */
+    public boolean judgePicStyle(Bitmap bitmap) {
+        if(bitmap.getWidth() >= bitmap.getHeight()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 
     /**
      *  判断是否超出屏幕
@@ -231,6 +240,36 @@ public class HandleActivity extends AppCompatActivity  {
         return ((float)(j - midx) * (j - midx)) / powa + ((float)(i - midy) * (i - midy)) / powb;
     }
 
+    /**
+     *  像素替换
+     */
+    public void pixelReplace(int[] param) {
+        try {
+            try {
+                if(!outScreen(param[0], param[1])) {
+                    photoBitmap.setPixel(param[0], param[1],
+                            copyPicFromFile.getPixel(param[3], param[2]));
+                }
+                if(!outScreen(param[0] + param[4], param[1])) {
+                    photoBitmap.setPixel(param[0] + param[4], param[1],
+                            copyPicFromFile.getPixel(param[3] + param[4], param[2]));
+                }
+                if(!outScreen(param[0] + param[4], param[1] + param[5])) {
+                    photoBitmap.setPixel(param[0] + param[4], param[1] + param[5],
+                            copyPicFromFile.getPixel(param[3] + param[4], param[2] + param[5]));
+                }
+                if(!outScreen(param[0], param[1] + param[5])) {
+                    photoBitmap.setPixel(param[0], param[1] + param[5],
+                            copyPicFromFile.getPixel(param[3], param[2] + param[5]));
+                }
+            } catch (IllegalArgumentException e) {
+//                        e.printStackTrace(); //pass
+            }
+        } catch (IllegalArgumentException e) {
+//                        e.printStackTrace(); //pass
+        }
+    }
+
 
 
     @OnClick(R.id.btnAccept)
@@ -238,8 +277,6 @@ public class HandleActivity extends AppCompatActivity  {
         //先把编辑后的图片存到SD
         String path = FileCacheUtil.EDITPATH; //存储JSON的路径
         FileCacheUtil fileCacheUtil = new FileCacheUtil(path);
-
-
 
         try {
             if(PhotoFiltersAdapter.dstBitmap != null) {

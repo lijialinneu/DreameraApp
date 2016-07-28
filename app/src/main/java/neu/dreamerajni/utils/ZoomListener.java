@@ -30,7 +30,6 @@ public class ZoomListener implements ScaleGestureDetector.OnScaleGestureListener
     private Matrix mScaleMatrix2 = new Matrix();
     private Matrix saveMatrix = new Matrix(); // 保存的matrix
 
-
     /**
      * 构造函数
      * @author 10405

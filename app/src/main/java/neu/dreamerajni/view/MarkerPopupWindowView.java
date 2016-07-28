@@ -1,9 +1,11 @@
 package neu.dreamerajni.view;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -11,6 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.TranslateAnimation;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -76,7 +79,6 @@ public class MarkerPopupWindowView extends View{
 
         cameraButton = (FloatingActionButton) activity.findViewById(R.id.cameraButton);
         gallery = (RecyclerView) activity.findViewById(R.id.id_gallery);
-
     }
 
 
@@ -122,7 +124,9 @@ public class MarkerPopupWindowView extends View{
      * 地图标注点 点击监听事件
      * @author 10405
      */
+    @TargetApi(Build.VERSION_CODES.M)
     public void popupWindow(String name, String imgList) throws JSONException {
+        cameraButton.setVisibility(INVISIBLE);
         if(NEVERPOPUP) {
             TranslateAnimation mShowAction = new TranslateAnimation(Animation.RELATIVE_TO_SELF, 0.0f,
                     Animation.RELATIVE_TO_SELF, 0.0f, Animation.RELATIVE_TO_SELF,
@@ -140,7 +144,6 @@ public class MarkerPopupWindowView extends View{
             nameView.setText(name);
             final ArrayList<HashMap<String, Object>> picList =
                     AsyncGetDataUtil.decodeCrossPicturesJsonToPoint(imgList);//解析JSON数据
-//            len = picList.size();
             PhotoListAdapter photoListAdapter = new PhotoListAdapter(activity, picList);
             gallery.setVisibility(VISIBLE);
             gallery.setHasFixedSize(true);

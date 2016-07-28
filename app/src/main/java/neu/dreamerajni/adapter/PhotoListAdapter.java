@@ -28,25 +28,28 @@ public class PhotoListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     private int itemsCount;
     private String pictureUrl, pictureId;
     private AsyncGetPicTask asyncGetPicTask;
-    private int date;
 
     public PhotoListAdapter(Context context, ArrayList<HashMap<String, Object>> picList) {
         this.context = context;
         this.picList = picList;
-        itemsCount = calculateCount();
+        itemsCount = picList.size();
+//        itemsCount = calculateCount();
     }
 
     // 计算数量，排除那些没有图片的点
-    public int calculateCount() {
-        int count = 0;
-        for(int i = 0; i < picList.size(); i++) {
-            pictureUrl = picList.get(i).get("url").toString();
-            if(pictureUrl != "null") {
-                count ++;
-            }
-        }
-        return count;
-    }
+    // 修改服务器上的程序，在服务器端发送数据前过滤
+    // 过滤一张图片都没有的点
+    // 如果某点的图片为空，则过滤改图片
+//    public int calculateCount() {
+//        int count = 0;
+//        for(int i = 0; i < picList.size(); i++) {
+//            pictureUrl = picList.get(i).get("url").toString();
+//            if(pictureUrl != "null") {
+//                count ++;
+//            }
+//        }
+//        return count;
+//    }
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -65,7 +68,6 @@ public class PhotoListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             holder.dateTextView.setText(picList.get(position).get("date").toString());
             holder.imgView.setImageResource(R.mipmap.ic_nothing);//先都设置为默认图片，
             holder.imgView.setTag(position);  //设置tag
-
             holder.selectImgView.setImageResource(R.mipmap.ic_selected); //设置选中的对号图片
             holder.selectImgView.setTag(position + "a");
             holder.imgView.setOnClickListener(new MyImgClickListener(pictureId, pictureUrl));
