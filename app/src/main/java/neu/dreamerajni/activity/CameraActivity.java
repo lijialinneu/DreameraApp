@@ -47,6 +47,7 @@ import neu.dreamerajni.utils.ImgToolKits;
 import neu.dreamerajni.utils.ZoomListener;
 import neu.dreamerajni.view.RevealBackgroundView;
 
+import static android.view.WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS;
 import static android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE;
 
 
@@ -208,7 +209,6 @@ public class CameraActivity extends AppCompatActivity implements
         Intent intent = getIntent();
         Bundle bundle = intent.getExtras();//从上一个Activity获取参数图片
         pictureID = bundle.getString("id");
-
         picFromFile = AsyncGetDataUtil.getPicFromFile(pictureID); //从缓存中取出图片
 
         wm = (WindowManager) this.getSystemService(Context.WINDOW_SERVICE);
@@ -216,7 +216,8 @@ public class CameraActivity extends AppCompatActivity implements
         borderBitmap = ImgToolKits.initBorderPic(
                 picFromFile,
                 wm.getDefaultDisplay().getWidth(),
-                wm.getDefaultDisplay().getWidth()
+                wm.getDefaultDisplay().getWidth(),
+                true
         );
 
         surfaceView = new SurfaceView(this);

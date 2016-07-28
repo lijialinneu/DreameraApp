@@ -159,7 +159,7 @@ public class HandleActivity extends AppCompatActivity  {
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     public void showOldPixel(){
         calEllipseParam(copyPicFromFile); //计算椭圆参数
-        int addtemp = 0; //计算偏移量
+        int addtemp; //计算偏移量
         if(judgePicStyle(picFromFile)) {
             addtemp = (int) (top + ImgToolKits.addHeight * matrixValues[Matrix.MSCALE_Y]);
         } else {
@@ -245,25 +245,21 @@ public class HandleActivity extends AppCompatActivity  {
      */
     public void pixelReplace(int[] param) {
         try {
-            try {
-                if(!outScreen(param[0], param[1])) {
-                    photoBitmap.setPixel(param[0], param[1],
-                            copyPicFromFile.getPixel(param[3], param[2]));
-                }
-                if(!outScreen(param[0] + param[4], param[1])) {
-                    photoBitmap.setPixel(param[0] + param[4], param[1],
-                            copyPicFromFile.getPixel(param[3] + param[4], param[2]));
-                }
-                if(!outScreen(param[0] + param[4], param[1] + param[5])) {
-                    photoBitmap.setPixel(param[0] + param[4], param[1] + param[5],
-                            copyPicFromFile.getPixel(param[3] + param[4], param[2] + param[5]));
-                }
-                if(!outScreen(param[0], param[1] + param[5])) {
-                    photoBitmap.setPixel(param[0], param[1] + param[5],
-                            copyPicFromFile.getPixel(param[3], param[2] + param[5]));
-                }
-            } catch (IllegalArgumentException e) {
-//                        e.printStackTrace(); //pass
+            if(!outScreen(param[0], param[1])) {
+                photoBitmap.setPixel(param[0], param[1],
+                        copyPicFromFile.getPixel(param[3], param[2]));
+            }
+            if(!outScreen(param[0] + param[4], param[1])) {
+                photoBitmap.setPixel(param[0] + param[4], param[1],
+                        copyPicFromFile.getPixel(param[3] + param[4], param[2]));
+            }
+            if(!outScreen(param[0] + param[4], param[1] + param[5])) {
+                photoBitmap.setPixel(param[0] + param[4], param[1] + param[5],
+                        copyPicFromFile.getPixel(param[3] + param[4], param[2] + param[5]));
+            }
+            if(!outScreen(param[0], param[1] + param[5])) {
+                photoBitmap.setPixel(param[0], param[1] + param[5],
+                        copyPicFromFile.getPixel(param[3], param[2] + param[5]));
             }
         } catch (IllegalArgumentException e) {
 //                        e.printStackTrace(); //pass
