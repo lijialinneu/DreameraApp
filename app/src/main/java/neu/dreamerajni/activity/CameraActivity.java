@@ -239,7 +239,6 @@ public class CameraActivity extends AppCompatActivity implements
         wmParams.width = borderBitmap.getWidth();
         wmParams.height = borderBitmap.getHeight();
         wmParams.flags = FLAG_NOT_TOUCHABLE;
-
         ViewGroup parent = (ViewGroup) surfaceView.getParent();
         if (parent != null) {
             parent.removeAllViews();

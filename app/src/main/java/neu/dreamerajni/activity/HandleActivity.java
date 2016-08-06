@@ -18,8 +18,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.KeyEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.ImageView;
@@ -191,6 +193,18 @@ public class HandleActivity extends AppCompatActivity  {
         oldPictureView = new SurfaceView(this);
         surfaceHolder = oldPictureView.getHolder();
         oldPictureView.setBackground(new BitmapDrawable(copyPicFromFile));
+
+        oldPictureView.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                switch (event.getKeyCode()) {
+                    case KeyEvent.KEYCODE_BACK:
+                        clickBack();
+                }
+                return false;
+            }
+        });
+
         oldPictureView.layout(left,
                 (int) (top + ImgToolKits.addHeight * matrixValues[Matrix.MSCALE_Y]),
                 left + photoBitmap.getWidth(), top + photoBitmap.getHeight());
@@ -198,7 +212,7 @@ public class HandleActivity extends AppCompatActivity  {
         wmParams = new WindowManager.LayoutParams();
         wmParams.width = copyPicFromFile.getWidth();
         wmParams.height = copyPicFromFile.getHeight();
-        wmParams.alpha = 0.5f;
+//        wmParams.alpha = 0.5f;
 
         wmParams.flags = FLAG_NOT_TOUCHABLE;
 
@@ -383,7 +397,7 @@ public class HandleActivity extends AppCompatActivity  {
         alphaSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                oldPictureView.getBackground().setAlpha(progress);
+                oldPictureView.getBackground().setAlpha(255 - progress);
             }
 
             @Override
