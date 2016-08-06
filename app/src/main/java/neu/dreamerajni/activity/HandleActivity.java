@@ -5,8 +5,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.PixelFormat;
+import android.graphics.PorterDuff;
+import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Build;
@@ -16,6 +20,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.SeekBar;
@@ -33,6 +38,9 @@ import neu.dreamerajni.utils.FileCacheUtil;
 import neu.dreamerajni.utils.ImgToolKits;
 import neu.dreamerajni.view.SquaredFrameLayout;
 
+import static android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE;
+import static android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL;
+
 
 @SuppressWarnings("deprecation")
 @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
@@ -42,8 +50,8 @@ public class HandleActivity extends AppCompatActivity  {
     ImageView photoView; //拍摄的照片
     @Bind(R.id.squareFrameLayout)
     SquaredFrameLayout squaredFrameLayout;
-    @Bind(R.id.rvFilters)
-    RecyclerView rvFilters;
+//    @Bind(R.id.rvFilters)
+//    RecyclerView rvFilters;
     @Bind(R.id.id_alpha)
     SeekBar alphaSeekBar;
 
@@ -57,6 +65,7 @@ public class HandleActivity extends AppCompatActivity  {
     private int borderWidth, borderHeight; // 边缘图片的宽和高
 
     private WindowManager wm;
+    private WindowManager.LayoutParams wmParams;
     private float screenWidth; //屏幕宽度，相机预览画面的宽度与屏幕的宽度相等
     private float xTrans, yTrans; // x位移、y位移、surfaceView距顶部的宽度、放缩倍数
     private int left, top; // borderView的left、top
@@ -65,7 +74,8 @@ public class HandleActivity extends AppCompatActivity  {
     private int midx, midy;
     private int powa, powb;
 
-//    private SurfaceView
+    private SurfaceView oldPictureView;
+    private SurfaceHolder surfaceHolder;
 
 
     @Override
@@ -90,19 +100,19 @@ public class HandleActivity extends AppCompatActivity  {
         initPhoto();
 
         /**
-         * 初始化边缘图
+         * 初始化老照片
          */
-        initBorder();
+        initOldPicture();
 
         /**
          * 图像融合，显示老照片的像素
          */
-        showOldPixel();
+//        showOldPixel();
 
         /**
          * 显示过滤图片列表
          */
-        setupPhotoFilters();
+//        setupPhotoFilters();
 
     }
 
@@ -112,23 +122,23 @@ public class HandleActivity extends AppCompatActivity  {
         /**
          * 初始化滑块,调整老照片的alpha值
          */
-//        adjustAlpha();
+        adjustAlpha();
     }
 
 
     /**
-     * 初始化拍摄照片
+     *
      * @author 10405
      */
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
-    private void setupPhotoFilters() {
-        PhotoFiltersAdapter photoFiltersAdapter =
-                new PhotoFiltersAdapter(this, photoView, photoBitmap);
-        rvFilters.setHasFixedSize(true);
-        rvFilters.setAdapter(photoFiltersAdapter);
-        rvFilters.setLayoutManager(
-                new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-    }
+//    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
+//    private void setupPhotoFilters() {
+//        PhotoFiltersAdapter photoFiltersAdapter =
+//                new PhotoFiltersAdapter(this, photoView, photoBitmap);
+//        rvFilters.setHasFixedSize(true);
+//        rvFilters.setAdapter(photoFiltersAdapter);
+//        rvFilters.setLayoutManager(
+//                new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+//    }
 
 
     /**
@@ -148,10 +158,9 @@ public class HandleActivity extends AppCompatActivity  {
      * @author 10405
      */
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
-    public void initBorder() {
+    public void initOldPicture() {
 
         picFromFile = AsyncGetDataUtil.getPicFromFile(id); //从缓存中取出图片
-
         //先把图片变成初始大小，然后再通过matrix变换
         borderBitmap = ImgToolKits.initBorderPic(picFromFile, screenWidth, screenWidth, false);
         borderBitmap = Bitmap.createBitmap(borderBitmap,
@@ -166,7 +175,8 @@ public class HandleActivity extends AppCompatActivity  {
                     borderHeight - 2 * ImgToolKits.addHeight * matrixValues[Matrix.MSCALE_Y]);
         } else {
             copyPicFromFile = ImgToolKits.changeBitmapSize(
-                    picFromFile, borderWidth - 2 * ImgToolKits.addHeight * matrixValues[Matrix.MSCALE_X],
+                    picFromFile,
+                    borderWidth - 2 * ImgToolKits.addHeight * matrixValues[Matrix.MSCALE_X],
                     borderHeight);
         }
 
@@ -177,6 +187,34 @@ public class HandleActivity extends AppCompatActivity  {
 
         left = (int) xTrans;
         top = (int) (yTrans + photoView.getTop());
+
+        oldPictureView = new SurfaceView(this);
+        surfaceHolder = oldPictureView.getHolder();
+        oldPictureView.setBackground(new BitmapDrawable(copyPicFromFile));
+        oldPictureView.layout(left,
+                (int) (top + ImgToolKits.addHeight * matrixValues[Matrix.MSCALE_Y]),
+                left + photoBitmap.getWidth(), top + photoBitmap.getHeight());
+
+        wmParams = new WindowManager.LayoutParams();
+        wmParams.width = copyPicFromFile.getWidth();
+        wmParams.height = copyPicFromFile.getHeight();
+        wmParams.alpha = 0.5f;
+
+        wmParams.flags = FLAG_NOT_TOUCHABLE;
+
+        ViewGroup parent = (ViewGroup) oldPictureView.getParent();
+        if (parent != null) {
+            parent.removeAllViews();
+        }
+        wm.addView(oldPictureView, wmParams);
+    }
+
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        //当activity 被destory时需要立即清除之前加载的view，否则会出现窗体泄露异常
+        wm.removeViewImmediate(oldPictureView);
     }
 
     @OnClick(R.id.btnBack)
@@ -189,57 +227,57 @@ public class HandleActivity extends AppCompatActivity  {
      * 显示老照片对应的像素
      * @author 10405
      */
-    public void showOldPixel(){
-        calEllipseParam(copyPicFromFile); //计算椭圆参数
-        int addtemp; //计算偏移量
-        if(judgePicStyle(picFromFile)) {
-            addtemp = (int) (top + ImgToolKits.addHeight * matrixValues[Matrix.MSCALE_Y]);
-        } else {
-            addtemp = (int) (left + ImgToolKits.addHeight * matrixValues[Matrix.MSCALE_X]);
-        }
-
-        for(int i = 0; i <= b; i++ ) { // i表示列
-            boolean flag = false;
-            int setX,setY;
-            for(int j = 0; j <= a; j += 2) { // j 表示行
-                if(judgePicStyle(picFromFile)) {
-                    setX = j + left;
-                    setY = i + addtemp;
-                } else {
-                    setX = j + addtemp;
-                    setY = i + top;
-                }
-                int xt = (a - j) * 2;
-                int yt = (b - i) * 2;
-
-                float t = 0; //减少计算次数
-                if(j == 0) { flag = true;}
-                if(flag) { t = calculateEllipse(i, j);}
-
-                if(t <= 1) { // t <= 1 表示在椭圆范围内
-                    flag = true;
-                    int[] param = {setX, setY, i, j, xt, yt};
-                    pixelReplace(param);
-                }
-            }
-        }
-        copyPhotoBitmap = photoBitmap; //保存一份副本
-        photoView.setBackground(new BitmapDrawable(photoBitmap));
-    }
-
-    /**
-     * 计算椭圆参数
-     */
-    public void calEllipseParam(Bitmap bitmap) {
-        a = (int)(bitmap.getWidth() * 0.5f);
-        b = (int)(bitmap.getHeight() * 0.5f);
-        c = (int)Math.sqrt(Math.pow(a,2) - Math.pow(b,2));
-
-        midx = (int)(bitmap.getWidth() * 0.5f);
-        midy = (int)(bitmap.getHeight() * 0.5f);
-        powa = a * a;
-        powb = b * b;
-    }
+//    public void showOldPixel(){
+//        calEllipseParam(copyPicFromFile); //计算椭圆参数
+//        int addtemp; //计算偏移量
+//        if(judgePicStyle(picFromFile)) {
+//            addtemp = (int) (top + ImgToolKits.addHeight * matrixValues[Matrix.MSCALE_Y]);
+//        } else {
+//            addtemp = (int) (left + ImgToolKits.addHeight * matrixValues[Matrix.MSCALE_X]);
+//        }
+//
+//        for(int i = 0; i <= b; i++ ) { // i表示列
+//            boolean flag = false;
+//            int setX,setY;
+//            for(int j = 0; j <= a; j += 2) { // j 表示行
+//                if(judgePicStyle(picFromFile)) {
+//                    setX = j + left;
+//                    setY = i + addtemp;
+//                } else {
+//                    setX = j + addtemp;
+//                    setY = i + top;
+//                }
+//                int xt = (a - j) * 2;
+//                int yt = (b - i) * 2;
+//
+//                float t = 0; //减少计算次数
+//                if(j == 0) { flag = true;}
+//                if(flag) { t = calculateEllipse(i, j);}
+//
+//                if(t <= 1) { // t <= 1 表示在椭圆范围内
+//                    flag = true;
+//                    int[] param = {setX, setY, i, j, xt, yt};
+//                    pixelReplace(param);
+//                }
+//            }
+//        }
+//        copyPhotoBitmap = photoBitmap; //保存一份副本
+//        photoView.setBackground(new BitmapDrawable(photoBitmap));
+//    }
+//
+//    /**
+//     * 计算椭圆参数
+//     */
+//    public void calEllipseParam(Bitmap bitmap) {
+//        a = (int)(bitmap.getWidth() * 0.5f);
+//        b = (int)(bitmap.getHeight() * 0.5f);
+//        c = (int)Math.sqrt(Math.pow(a,2) - Math.pow(b,2));
+//
+//        midx = (int)(bitmap.getWidth() * 0.5f);
+//        midy = (int)(bitmap.getHeight() * 0.5f);
+//        powa = a * a;
+//        powb = b * b;
+//    }
 
     /**
      * 判断是宽 > 高的图片，还是高 > 宽的图片
@@ -258,45 +296,45 @@ public class HandleActivity extends AppCompatActivity  {
      *  @param i
      *  @param j
      */
-    public boolean outScreen(int i, int j) {
-        if(i < 0 || i > screenWidth || j < 0 || j > screenWidth) {
-            return true;
-        }
-        return false;
-    }
+//    public boolean outScreen(int i, int j) {
+//        if(i < 0 || i > screenWidth || j < 0 || j > screenWidth) {
+//            return true;
+//        }
+//        return false;
+//    }
 
     /**
      *  计算椭圆表达式
      */
-    public float calculateEllipse(int i, int j) {
-        return ((float)(j - midx) * (j - midx)) / powa + ((float)(i - midy) * (i - midy)) / powb;
-    }
+//    public float calculateEllipse(int i, int j) {
+//        return ((float)(j - midx) * (j - midx)) / powa + ((float)(i - midy) * (i - midy)) / powb;
+//    }
 
     /**
      *  像素替换
      */
-    public void pixelReplace(int[] param) {
-        try {
-            if(!outScreen(param[0], param[1])) {
-                photoBitmap.setPixel(param[0], param[1],
-                        copyPicFromFile.getPixel(param[3], param[2]));
-            }
-            if(!outScreen(param[0] + param[4], param[1])) {
-                photoBitmap.setPixel(param[0] + param[4], param[1],
-                        copyPicFromFile.getPixel(param[3] + param[4], param[2]));
-            }
-            if(!outScreen(param[0] + param[4], param[1] + param[5])) {
-                photoBitmap.setPixel(param[0] + param[4], param[1] + param[5],
-                        copyPicFromFile.getPixel(param[3] + param[4], param[2] + param[5]));
-            }
-            if(!outScreen(param[0], param[1] + param[5])) {
-                photoBitmap.setPixel(param[0], param[1] + param[5],
-                        copyPicFromFile.getPixel(param[3], param[2] + param[5]));
-            }
-        } catch (IllegalArgumentException e) {
-//                        e.printStackTrace(); //pass
-        }
-    }
+//    public void pixelReplace(int[] param) {
+//        try {
+//            if(!outScreen(param[0], param[1])) {
+//                photoBitmap.setPixel(param[0], param[1],
+//                        copyPicFromFile.getPixel(param[3], param[2]));
+//            }
+//            if(!outScreen(param[0] + param[4], param[1])) {
+//                photoBitmap.setPixel(param[0] + param[4], param[1],
+//                        copyPicFromFile.getPixel(param[3] + param[4], param[2]));
+//            }
+//            if(!outScreen(param[0] + param[4], param[1] + param[5])) {
+//                photoBitmap.setPixel(param[0] + param[4], param[1] + param[5],
+//                        copyPicFromFile.getPixel(param[3] + param[4], param[2] + param[5]));
+//            }
+//            if(!outScreen(param[0], param[1] + param[5])) {
+//                photoBitmap.setPixel(param[0], param[1] + param[5],
+//                        copyPicFromFile.getPixel(param[3], param[2] + param[5]));
+//            }
+//        } catch (IllegalArgumentException e) {
+////                        e.printStackTrace(); //pass
+//        }
+//    }
 
 
     /**
@@ -304,47 +342,48 @@ public class HandleActivity extends AppCompatActivity  {
      */
     @OnClick(R.id.btnAccept)
     public void share() {
-        //先把编辑后的图片存到SD
-        String path = FileCacheUtil.EDITPATH; //存储JSON的路径
-        FileCacheUtil fileCacheUtil = new FileCacheUtil(path);
-
-        try {
-            if(PhotoFiltersAdapter.dstBitmap != null) {
-                fileCacheUtil.savePicture(PhotoFiltersAdapter.dstBitmap, "Edit");
-            }else {
-                fileCacheUtil.savePicture(photoBitmap, "Edit");
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        //由文件得到uri
-        Uri imageUri = Uri.fromFile(new File(path + "/" + fileCacheUtil.filename));
-        Intent shareButtonIntent = new Intent();
-        shareButtonIntent.setAction(Intent.ACTION_SEND);
-        shareButtonIntent.putExtra(Intent.EXTRA_STREAM, imageUri);
-        shareButtonIntent.setType("image/*");
-        startActivity(Intent.createChooser(shareButtonIntent, "分享到"));
+//        //先把编辑后的图片存到SD
+//        String path = FileCacheUtil.EDITPATH; //存储JSON的路径
+//        FileCacheUtil fileCacheUtil = new FileCacheUtil(path);
+//
+//        try {
+//            if(PhotoFiltersAdapter.dstBitmap != null) {
+//                fileCacheUtil.savePicture(PhotoFiltersAdapter.dstBitmap, "Edit");
+//            }else {
+//                fileCacheUtil.savePicture(photoBitmap, "Edit");
+//            }
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//
+//        //由文件得到uri
+//        Uri imageUri = Uri.fromFile(new File(path + "/" + fileCacheUtil.filename));
+//        Intent shareButtonIntent = new Intent();
+//        shareButtonIntent.setAction(Intent.ACTION_SEND);
+//        shareButtonIntent.putExtra(Intent.EXTRA_STREAM, imageUri);
+//        shareButtonIntent.setType("image/*");
+//        startActivity(Intent.createChooser(shareButtonIntent, "分享到"));
     }
 
     /**
      * 撤销之前的操作
      */
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
-    @OnClick(R.id.btnRedo)
-    public void redo() { //撤销
-        PhotoFiltersAdapter.dstBitmap = null;
-        photoView.setBackground(new BitmapDrawable(copyPhotoBitmap));
-    }
+//    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
+//    @OnClick(R.id.btnRedo)
+//    public void redo() { //撤销
+//        PhotoFiltersAdapter.dstBitmap = null;
+//        photoView.setBackground(new BitmapDrawable(copyPhotoBitmap));
+//    }
 
     /**
      * 调整图片的alpha值
      */
     public void adjustAlpha() {
+
         alphaSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-
+                oldPictureView.getBackground().setAlpha(progress);
             }
 
             @Override
