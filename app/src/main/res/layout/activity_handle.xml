@@ -8,7 +8,6 @@
     android:background="#16181a"
     tools:context="neu.dreamerajni.activity.HandleActivity">
 
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -29,8 +28,8 @@
 
                 <ImageButton
                     android:id="@+id/btnBack"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
                     android:background="@drawable/btn_default_light"
                     android:src="@mipmap/ic_arrow_back_white_24dp" />
 
@@ -39,27 +38,25 @@
                     android:layout_height="1dp"
                     android:layout_weight="1" />
 
-
                 <!-- 撤销 -->
                 <ImageButton
                     android:id="@+id/btnRedo"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
                     android:background="@drawable/btn_default_light"
                     android:src="@mipmap/ic_return" />
 
-
                 <ImageButton
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
                     android:layout_marginLeft="8dp"
                     android:layout_marginRight="8dp"
                     android:background="@drawable/btn_default_light"
                     android:src="@mipmap/ic_edit_white_24dp" />
 
                 <ImageButton
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
                     android:background="@drawable/btn_default_light"
                     android:src="@mipmap/ic_edit_white_24dp" />
 
@@ -70,10 +67,10 @@
 
                 <ImageButton
                     android:id="@+id/btnAccept"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
                     android:background="@drawable/btn_default_light"
-                    android:src="@mipmap/ic_arrow_forward_white_24dp" />
+                    android:src="@mipmap/ic_share" />
 
             </LinearLayout>
 
@@ -86,12 +83,41 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <SurfaceView
+            <ImageView
                 android:id="@+id/photoView"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
 
         </neu.dreamerajni.view.SquaredFrameLayout>
+
+        <!-- 中后部滑动条 -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <SeekBar
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/id_alpha"
+                    android:background="#16181a"
+                    android:max="100"
+                    android:progress="0" />
+
+                <SeekBar
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/id_blur"
+                    android:background="#16181a"
+                    android:progress="0" />
+
+            </LinearLayout>
+
+        </RelativeLayout>
 
         <!-- 底部 -->
         <RelativeLayout

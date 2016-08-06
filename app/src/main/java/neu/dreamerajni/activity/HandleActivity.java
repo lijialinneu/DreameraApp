@@ -4,7 +4,9 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Matrix;
+import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Build;
@@ -12,8 +14,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.WindowManager;
+import android.widget.ImageView;
+import android.widget.SeekBar;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,14 +35,17 @@ import neu.dreamerajni.view.SquaredFrameLayout;
 
 
 @SuppressWarnings("deprecation")
+@TargetApi(Build.VERSION_CODES.JELLY_BEAN)
 public class HandleActivity extends AppCompatActivity  {
 
     @Bind(R.id.photoView)
-    SurfaceView photoView; //拍摄的照片
+    ImageView photoView; //拍摄的照片
     @Bind(R.id.squareFrameLayout)
     SquaredFrameLayout squaredFrameLayout;
     @Bind(R.id.rvFilters)
     RecyclerView rvFilters;
+    @Bind(R.id.id_alpha)
+    SeekBar alphaSeekBar;
 
     private String id; //图片的id
     private Matrix matrix = new Matrix();//前一个Activity传回的矩阵参数
@@ -50,19 +58,20 @@ public class HandleActivity extends AppCompatActivity  {
 
     private WindowManager wm;
     private float screenWidth; //屏幕宽度，相机预览画面的宽度与屏幕的宽度相等
-    private float xTrans, yTrans, sTop, scale; // x位移、y位移、surfaceView距顶部的宽度、放缩倍数
-    private int left, top;// borderView的left、top
+    private float xTrans, yTrans; // x位移、y位移、surfaceView距顶部的宽度、放缩倍数
+    private int left, top; // borderView的left、top
 
     private int a, b, c; //椭圆的参数
     private int midx, midy;
     private int powa, powb;
+
+//    private SurfaceView
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_handle);
-
         ButterKnife.bind(this);
 
         Intent intent = getIntent();
@@ -75,10 +84,35 @@ public class HandleActivity extends AppCompatActivity  {
         wm = (WindowManager) this.getSystemService(Context.WINDOW_SERVICE);
         screenWidth = wm.getDefaultDisplay().getWidth();
 
-        initPhoto(); //初始化拍摄照片
-        initBorder(); //初始化边缘图
+        /**
+         * 初始化拍摄照片
+         */
+        initPhoto();
+
+        /**
+         * 初始化边缘图
+         */
+        initBorder();
+
+        /**
+         * 图像融合，显示老照片的像素
+         */
         showOldPixel();
-        setupPhotoFilters(); //显示过滤图片列表
+
+        /**
+         * 显示过滤图片列表
+         */
+        setupPhotoFilters();
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        /**
+         * 初始化滑块,调整老照片的alpha值
+         */
+//        adjustAlpha();
     }
 
 
@@ -136,7 +170,6 @@ public class HandleActivity extends AppCompatActivity  {
                     borderHeight);
         }
 
-
         float[] matrixValues = new float[9];
         matrix.getValues(matrixValues);
         xTrans = matrixValues[Matrix.MTRANS_X];
@@ -156,7 +189,6 @@ public class HandleActivity extends AppCompatActivity  {
      * 显示老照片对应的像素
      * @author 10405
      */
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     public void showOldPixel(){
         calEllipseParam(copyPicFromFile); //计算椭圆参数
         int addtemp; //计算偏移量
@@ -267,7 +299,9 @@ public class HandleActivity extends AppCompatActivity  {
     }
 
 
-
+    /**
+     * 点击分享按钮
+     */
     @OnClick(R.id.btnAccept)
     public void share() {
         //先把编辑后的图片存到SD
@@ -293,11 +327,56 @@ public class HandleActivity extends AppCompatActivity  {
         startActivity(Intent.createChooser(shareButtonIntent, "分享到"));
     }
 
+    /**
+     * 撤销之前的操作
+     */
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     @OnClick(R.id.btnRedo)
     public void redo() { //撤销
         PhotoFiltersAdapter.dstBitmap = null;
         photoView.setBackground(new BitmapDrawable(copyPhotoBitmap));
     }
+
+    /**
+     * 调整图片的alpha值
+     */
+    public void adjustAlpha() {
+        alphaSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                // TODO Auto-generated method stub
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                // TODO Auto-generated method stub
+            }
+        });
+    }
+
+
+    public  Bitmap getTransparentBitmap(Bitmap sourceImg, int number){
+        int[] argb = new int[sourceImg.getWidth() * sourceImg.getHeight()];
+
+        sourceImg.getPixels(argb, 0, sourceImg.getWidth(), 0, 0, sourceImg
+                .getWidth(), sourceImg.getHeight());// 获得图片的ARGB值
+
+        number = number * 255 / 100;
+
+        for (int i = 0; i < argb.length; i++) {
+            argb[i] = (number << 24) | (argb[i] & 0x00FFFFFF);
+        }
+
+        sourceImg = Bitmap.createBitmap(argb, sourceImg.getWidth(), sourceImg
+                .getHeight(), Bitmap.Config.ARGB_8888);
+
+        return sourceImg;
+    }
+
 
 }

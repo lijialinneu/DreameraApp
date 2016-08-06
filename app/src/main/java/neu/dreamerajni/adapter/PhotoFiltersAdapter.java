@@ -28,11 +28,11 @@ public class PhotoFiltersAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     private Context context;
     private int itemsCount = 8;
 
-    private SurfaceView photoView;
+    private ImageView photoView;
     private Bitmap photoBitmap;
     public static Bitmap dstBitmap = null;
 
-    public PhotoFiltersAdapter(Context context,SurfaceView photoView, Bitmap photoBitmap) {
+    public PhotoFiltersAdapter(Context context,ImageView photoView, Bitmap photoBitmap) {
         this.context = context;
         this.photoView = photoView;
         this.photoBitmap = photoBitmap;
@@ -41,10 +41,10 @@ public class PhotoFiltersAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         final View view = LayoutInflater.from(context).inflate(R.layout.item_photo_filter, parent, false);
-        WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
-        WindowManager wm =  (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-        lp.width = wm.getDefaultDisplay().getWidth()/4;
-        view.setLayoutParams(lp);
+//        WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
+//        WindowManager wm =  (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+//        lp.width = wm.getDefaultDisplay().getWidth()/4;
+//        view.setLayoutParams(lp);
         return new PhotoFilterViewHolder(view);
     }
 
