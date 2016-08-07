@@ -4,12 +4,14 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
 import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
@@ -79,6 +81,19 @@ public class HandleActivity extends AppCompatActivity  {
     private SurfaceView oldPictureView;
     private SurfaceHolder surfaceHolder;
 
+    // mask
+    private ImageView maskView;
+    private Bitmap maskBitmap;
+    private final int WITHOUT = -1;
+    private static final int MASK = 1;
+    private Bitmap resultBitmap;
+
+
+    private int[] resIds = new int[]{       //渐变
+            WITHOUT,
+            R.mipmap.ic_mask,
+    };
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -116,7 +131,34 @@ public class HandleActivity extends AppCompatActivity  {
          */
 //        setupPhotoFilters();
 
+//        Bitmap b = createCircleImage(copyPicFromFile, 20);
+//        oldPictureView.setBackground(new BitmapDrawable(b));
+
     }
+
+
+
+    /**
+     * 根据原图和变长绘制圆形图片
+     */
+//    private Bitmap createCircleImage(Bitmap source, int min) {
+//        final Paint paint = new Paint();
+//        paint.setAntiAlias(true);
+//        // 注意一定要用ARGB_8888，否则因为背景不透明导致遮罩失败
+//        Bitmap target = Bitmap.createBitmap(min, min, Bitmap.Config.ARGB_8888);
+//// 产生一个同样大小的画布
+//        Canvas canvas = new Canvas(target);
+//// 首先绘制圆形
+//        canvas.drawCircle(min / 2, min / 2, min / 2, paint);
+//// 使用SRC_IN
+//        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
+//// 绘制图片
+//        canvas.drawBitmap(source, 0, 0, paint);
+//        return target;
+//    }
+
+
+
 
     @Override
     protected void onResume() {
@@ -192,7 +234,7 @@ public class HandleActivity extends AppCompatActivity  {
 
         oldPictureView = new SurfaceView(this);
         surfaceHolder = oldPictureView.getHolder();
-        oldPictureView.setBackground(new BitmapDrawable(copyPicFromFile));
+//        oldPictureView.setBackground(new BitmapDrawable(copyPicFromFile));
 
         oldPictureView.setOnKeyListener(new View.OnKeyListener() {
             @Override
@@ -212,8 +254,6 @@ public class HandleActivity extends AppCompatActivity  {
         wmParams = new WindowManager.LayoutParams();
         wmParams.width = copyPicFromFile.getWidth();
         wmParams.height = copyPicFromFile.getHeight();
-//        wmParams.alpha = 0.5f;
-
         wmParams.flags = FLAG_NOT_TOUCHABLE;
 
         ViewGroup parent = (ViewGroup) oldPictureView.getParent();
@@ -221,6 +261,52 @@ public class HandleActivity extends AppCompatActivity  {
             parent.removeAllViews();
         }
         wm.addView(oldPictureView, wmParams);
+
+        addMask();
+    }
+
+    public void addMask() {
+        maskBitmap = BitmapFactory.decodeResource(this.getResources(), resIds[MASK]);
+        maskBitmap = Bitmap.createScaledBitmap(maskBitmap,
+                copyPicFromFile.getWidth(), copyPicFromFile.getHeight(), false);
+        int w = copyPicFromFile.getWidth();
+        int h = copyPicFromFile.getHeight();
+        int edgeColor = maskBitmap.getPixel(1, 1);
+        int centerColor = maskBitmap.getPixel(w/2, h/2);
+        resultBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+        //前置相片添加蒙板效果
+        int[] picPixels = new int[w * h];
+        int[] maskPixels = new int[w * h];
+
+        copyPicFromFile.getPixels(picPixels, 0, w, 0, 0, w, h);
+        maskBitmap.getPixels(maskPixels, 0, w, 0, 0, w, h);
+
+        for(int i = 0; i < maskPixels.length; i++) {
+            if(maskPixels[i] == 0xff000000){ //黑色
+                picPixels[i] = 0;
+            }else if(maskPixels[i] == 0){ //透明色
+                //donothing
+            }else{
+                //把mask的a通道应用与picBitmap
+                maskPixels[i] &= 0xff000000;
+                maskPixels[i] = 0xff000000 - maskPixels[i];
+                picPixels[i] &= 0x00ffffff;
+                picPixels[i] |= maskPixels[i];
+            }
+        }
+        //生成前置图片添加蒙板后的bitmap:resultBitmap
+        resultBitmap.setPixels(picPixels, 0, w, 0, 0, w, h);
+        oldPictureView.setBackground(new BitmapDrawable(resultBitmap));
+
+
+//        composedBitmap = Bitmap.createBitmap(fengjingBitmap.getWidth(), fengjingBitmap.getHeight(), Bitmap.Config.ARGB_8888);
+//        Canvas cv = new Canvas(copyPicFromFile);
+//        cv.drawBitmap(fengjingBitmap, 0, 0, null);
+//        cv.drawBitmap(resultBitmap, 100, 100, null);
+//
+//        cv.save(Canvas.ALL_SAVE_FLAG);
+//        cv.restore();
+//        resultView.setImageBitmap(composedBitmap);
     }
 
 
