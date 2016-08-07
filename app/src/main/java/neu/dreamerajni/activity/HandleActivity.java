@@ -27,6 +27,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 
 import java.io.File;
@@ -234,7 +235,7 @@ public class HandleActivity extends AppCompatActivity  {
 
         oldPictureView = new SurfaceView(this);
         surfaceHolder = oldPictureView.getHolder();
-//        oldPictureView.setBackground(new BitmapDrawable(copyPicFromFile));
+        oldPictureView.setBackground(new BitmapDrawable(copyPicFromFile));
 
         oldPictureView.setOnKeyListener(new View.OnKeyListener() {
             @Override
@@ -247,14 +248,20 @@ public class HandleActivity extends AppCompatActivity  {
             }
         });
 
-        oldPictureView.layout(left,
-                (int) (top + ImgToolKits.addHeight * matrixValues[Matrix.MSCALE_Y]),
-                left + photoBitmap.getWidth(), top + photoBitmap.getHeight());
+//        oldPictureView.layout(left,
+//                (int) (top + ImgToolKits.addHeight * matrixValues[Matrix.MSCALE_Y]),
+//                left + photoBitmap.getWidth(), top + photoBitmap.getHeight());
+
+        int leftw = ((int)screenWidth - copyPicFromFile.getWidth()) / 2;
+        int topw = ((int)screenWidth - copyPicFromFile.getHeight()) / 2;
 
         wmParams = new WindowManager.LayoutParams();
+        wmParams.x = left - leftw;
+        wmParams.y = (int)(top - topw + ImgToolKits.addHeight * matrixValues[Matrix.MSCALE_Y]);
         wmParams.width = copyPicFromFile.getWidth();
         wmParams.height = copyPicFromFile.getHeight();
         wmParams.flags = FLAG_NOT_TOUCHABLE;
+//        wmParams.alpha = 0.5f;
 
         ViewGroup parent = (ViewGroup) oldPictureView.getParent();
         if (parent != null) {
@@ -271,8 +278,8 @@ public class HandleActivity extends AppCompatActivity  {
                 copyPicFromFile.getWidth(), copyPicFromFile.getHeight(), false);
         int w = copyPicFromFile.getWidth();
         int h = copyPicFromFile.getHeight();
-        int edgeColor = maskBitmap.getPixel(1, 1);
-        int centerColor = maskBitmap.getPixel(w/2, h/2);
+//        int edgeColor = maskBitmap.getPixel(1, 1);
+//        int centerColor = maskBitmap.getPixel(w/2, h/2);
         resultBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
         //前置相片添加蒙板效果
         int[] picPixels = new int[w * h];
@@ -297,16 +304,6 @@ public class HandleActivity extends AppCompatActivity  {
         //生成前置图片添加蒙板后的bitmap:resultBitmap
         resultBitmap.setPixels(picPixels, 0, w, 0, 0, w, h);
         oldPictureView.setBackground(new BitmapDrawable(resultBitmap));
-
-
-//        composedBitmap = Bitmap.createBitmap(fengjingBitmap.getWidth(), fengjingBitmap.getHeight(), Bitmap.Config.ARGB_8888);
-//        Canvas cv = new Canvas(copyPicFromFile);
-//        cv.drawBitmap(fengjingBitmap, 0, 0, null);
-//        cv.drawBitmap(resultBitmap, 100, 100, null);
-//
-//        cv.save(Canvas.ALL_SAVE_FLAG);
-//        cv.restore();
-//        resultView.setImageBitmap(composedBitmap);
     }
 
 
