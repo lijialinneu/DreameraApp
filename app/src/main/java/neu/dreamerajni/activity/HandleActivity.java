@@ -35,6 +35,7 @@ import neu.dreamerajni.utils.ImgToolKits;
 import neu.dreamerajni.view.SquaredFrameLayout;
 
 import static android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE;
+import static android.view.WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS;
 
 
 @SuppressWarnings("deprecation")
@@ -60,22 +61,22 @@ public class HandleActivity extends AppCompatActivity  {
     private Bitmap copyPicFromFile;     //老照片的副本
     private Bitmap borderBitmap;        //边缘检测后的图片
     private SurfaceView oldPictureView; //显示老照片的SurfaceView
-    private int borderWidth;            //边缘图片的宽
-    private int borderHeight;           //边缘图片的高
-    private int left;                   //老照片的left
-    private int top;                    // 老照片的top
-    private float screenWidth;          //屏幕宽度，相机预览画面的宽度与屏幕的宽度相等
-    private float xTrans;               //变换矩阵中的x方向位移的值
-    private float yTrans;               //变换矩阵中的y方向位移的值
+    private int borderWidth = 0;        //边缘图片的宽
+    private int borderHeight = 0;       //边缘图片的高
+    private int left = 0;               //老照片的left
+    private int top = 0;                // 老照片的top
+    private float screenWidth = 0;      //屏幕宽度，相机预览画面的宽度与屏幕的宽度相等
+    private float xTrans = 0;           //变换矩阵中的x方向位移的值
+    private float yTrans = 0;           //变换矩阵中的y方向位移的值
     private Bitmap maskBitmap;          // 遮罩mask处理
     private Bitmap resultBitmap;        //最终结果图片
     private final int WITHOUT = -1;
     private static final int MASK = 1;
-    private int xOffset;                //悬浮窗中图片的x偏移量
-    private int yOffset;                //悬浮窗中图片的y偏移量
-    private int alpha;                  //老照片的透明度
-    private float addX;                 //x方向的补充值
-    private float addY;                 //y方向的补充值
+    private int xOffset = 0;            //悬浮窗中图片的x偏移量
+    private int yOffset = 0;            //悬浮窗中图片的y偏移量
+    private int alpha = 255;            //老照片的透明度
+    private float addX = 0;             //x方向的补充值
+    private float addY = 0;             //y方向的补充值
     private int type = 0;               //0 表示横向图片，1表示竖向图片
     private int[] resIds = new int[]{   //渐变
         WITHOUT,
@@ -144,17 +145,16 @@ public class HandleActivity extends AppCompatActivity  {
         copyPicFromFile = ImgToolKits.changeBitmapSize(picFromFile,
                 borderWidth - 2 * addX * type, borderHeight - 2 * addY * (1 - type));
 
-        float[] matrixValues = new float[9];
+        float[] matrixValues = new float[9];    //读取变换矩阵
         matrix.getValues(matrixValues);
-        xTrans = matrixValues[Matrix.MTRANS_X];
-        yTrans = matrixValues[Matrix.MTRANS_Y];
+        xTrans = matrixValues[Matrix.MTRANS_X]; //x位移值
+        yTrans = matrixValues[Matrix.MTRANS_Y]; //y位移值
 
         left = (int) xTrans;
         top = (int) (yTrans + photoView.getTop());
 
         oldPictureView = new SurfaceView(this);
         oldPictureView.setBackground(new BitmapDrawable(copyPicFromFile));
-
         oldPictureView.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View v, int keyCode, KeyEvent event) {
@@ -172,12 +172,13 @@ public class HandleActivity extends AppCompatActivity  {
         wmParams = new WindowManager.LayoutParams();
         wmParams.x = (int)(left - leftw + type * addX);
         wmParams.y = (int)(top - topw + (1 - type) * addY);
+
         xOffset = wmParams.x + leftw;
         yOffset = wmParams.y + topw;
+
         wmParams.width = copyPicFromFile.getWidth();
         wmParams.height = copyPicFromFile.getHeight();
-        wmParams.flags = FLAG_NOT_TOUCHABLE;
-//        wmParams.alpha = 0.5f;
+        wmParams.flags = FLAG_NOT_TOUCHABLE | FLAG_LAYOUT_NO_LIMITS;
 
         ViewGroup parent = (ViewGroup) oldPictureView.getParent();
         if (parent != null) {
@@ -295,7 +296,7 @@ public class HandleActivity extends AppCompatActivity  {
         alphaSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                alpha = 255 - progress;
+                alpha -= progress;
                 oldPictureView.getBackground().setAlpha(alpha);
             }
 
