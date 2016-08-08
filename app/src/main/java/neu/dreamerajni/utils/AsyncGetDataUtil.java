@@ -213,7 +213,7 @@ public class AsyncGetDataUtil {
         long presentDay = presentDate.getTime();
         long oneDay = 86400000; //一天的毫秒数 24*3600*1000
         long oneHour = 3600000; //一小时
-        if(presentDay - createDay >= oneDay * 3){ // 超过一小时就更新，用于测试阶段
+        if(presentDay - createDay >= oneHour){ // 超过一小时就更新，用于测试阶段
             return true;
         }else{
             return false;

@@ -200,6 +200,27 @@ public class HandleActivity extends AppCompatActivity  {
         int h = copyPicFromFile.getHeight();
         resultBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
 
+//        //前置相片添加蒙板效果
+//        int[] picPixels = new int[w * h];
+//        int[] maskPixels = new int[w * h];
+//
+//        copyPicFromFile.getPixels(picPixels, 0, w, 0, 0, w, h);
+//        maskBitmap.getPixels(maskPixels, 0, w, 0, 0, w, h);
+//
+//        for(int i = 0; i < maskPixels.length; i++) {
+//            if(maskPixels[i] == 0xff000000){ //黑色
+//                picPixels[i] = 0;
+//            }else if(maskPixels[i] == 0){ //透明色
+//                //pass
+//            }else{
+//                //把mask的a通道与picBitmap与
+//                maskPixels[i] &= 0xff000000;
+//                maskPixels[i] = 0xff000000 - maskPixels[i];
+//                picPixels[i] &= 0x00ffffff;
+//                picPixels[i] |= maskPixels[i];
+//            }
+//        }
+
         //前置相片添加蒙板效果
         int[] picPixels = new int[w * h];
         int[] maskPixels = new int[w * h];
@@ -207,19 +228,34 @@ public class HandleActivity extends AppCompatActivity  {
         copyPicFromFile.getPixels(picPixels, 0, w, 0, 0, w, h);
         maskBitmap.getPixels(maskPixels, 0, w, 0, 0, w, h);
 
+        int x, y, px, py;
         for(int i = 0; i < maskPixels.length; i++) {
-            if(maskPixels[i] == 0xff000000){ //黑色
+
+            y = i / w;
+            x = i - (y - 1) * w;
+            py = yOffset + y + photoView.getTop();
+            px = xOffset + x;
+
+
+            if(py <= photoView.getTop() || py >= photoView.getTop() + screenWidth) {
+//                i = i + w - 1;
                 picPixels[i] = 0;
-            }else if(maskPixels[i] == 0){ //透明色
-                //pass
-            }else{
-                //把mask的a通道与picBitmap与
-                maskPixels[i] &= 0xff000000;
-                maskPixels[i] = 0xff000000 - maskPixels[i];
-                picPixels[i] &= 0x00ffffff;
-                picPixels[i] |= maskPixels[i];
+            } else{
+                if(maskPixels[i] == 0xff000000){ //黑色
+                    picPixels[i] = 0;
+                }else if(maskPixels[i] == 0){ //透明色
+                    //pass
+                }else{
+                    //把mask的a通道与picBitmap与
+                    maskPixels[i] &= 0xff000000;
+                    maskPixels[i] = 0xff000000 - maskPixels[i];
+                    picPixels[i] &= 0x00ffffff;
+                    picPixels[i] |= maskPixels[i];
+                }
             }
         }
+
+
         //生成前置图片添加蒙板后的bitmap:resultBitmap
         resultBitmap.setPixels(picPixels, 0, w, 0, 0, w, h);
         oldPictureView.setBackground(new BitmapDrawable(resultBitmap));
@@ -296,7 +332,7 @@ public class HandleActivity extends AppCompatActivity  {
         alphaSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                alpha -= progress;
+                alpha = 255 - progress;
                 oldPictureView.getBackground().setAlpha(alpha);
             }
 
