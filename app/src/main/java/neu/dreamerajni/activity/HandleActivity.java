@@ -6,30 +6,20 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
-import android.graphics.PixelFormat;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffXfermode;
-import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.view.KeyEvent;
-import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 
 import java.io.File;
@@ -39,14 +29,12 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import neu.dreamerajni.R;
-import neu.dreamerajni.adapter.PhotoFiltersAdapter;
 import neu.dreamerajni.utils.AsyncGetDataUtil;
 import neu.dreamerajni.utils.FileCacheUtil;
 import neu.dreamerajni.utils.ImgToolKits;
 import neu.dreamerajni.view.SquaredFrameLayout;
 
 import static android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE;
-import static android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL;
 
 
 @SuppressWarnings("deprecation")
@@ -62,35 +50,33 @@ public class HandleActivity extends AppCompatActivity  {
     @Bind(R.id.btnNextActivity)
     ImageButton nextButton;
 
-    private String id; //图片的id
-    private Matrix matrix = new Matrix();//前一个Activity传回的矩阵参数
-    private float[] matrixValues = new float[9]; //用于获取矩阵的参数
-
-    private Bitmap photoBitmap, copyPhotoBitmap; //新拍摄的照片和副本
-    private Bitmap picFromFile, copyPicFromFile; //从文件中获取的源照片和副本
-    private Bitmap borderBitmap; //边缘检测后的图片
-    private int borderWidth, borderHeight; // 边缘图片的宽和高
-
     private WindowManager wm;
-    private WindowManager.LayoutParams wmParams;
-    private float screenWidth; //屏幕宽度，相机预览画面的宽度与屏幕的宽度相等
-    private float xTrans, yTrans; // x位移、y位移、surfaceView距顶部的宽度、放缩倍数
-    private int left, top; // borderView的left、top
-
-    private int a, b, c; //椭圆的参数
-    private int midx, midy;
-    private int powa, powb;
-
-    private SurfaceView oldPictureView;
-    private SurfaceHolder surfaceHolder;
-
-    // 遮罩mask处理
-    private Bitmap maskBitmap;
+    private WindowManager.LayoutParams wmParams; //屏幕参数
+    private String id;   //图片的id
+    private Matrix matrix = new Matrix();        //前一个Activity传回的矩阵参数
+    private float[] matrixValues = new float[9]; //用于获取矩阵的参数
+    private Bitmap photoBitmap;         //拍摄的照片
+    private Bitmap picFromFile;         //从文件中获取的老照片
+    private Bitmap copyPicFromFile;     //老照片的副本
+    private Bitmap borderBitmap;        //边缘检测后的图片
+    private SurfaceView oldPictureView; //显示老照片的SurfaceView
+    private int borderWidth;            //边缘图片的宽
+    private int borderHeight;           //边缘图片的高
+    private int left;                   //老照片的left
+    private int top;                    // 老照片的top
+    private float screenWidth;          //屏幕宽度，相机预览画面的宽度与屏幕的宽度相等
+    private float xTrans;               //变换矩阵中的x方向位移的值
+    private float yTrans;               //变换矩阵中的y方向位移的值
+    private Bitmap maskBitmap;          // 遮罩mask处理
+    private Bitmap resultBitmap;        //最终结果图片
     private final int WITHOUT = -1;
     private static final int MASK = 1;
-    private Bitmap resultBitmap;
-    private int xOffset, yOffset;
-    private int alpha;
+    private int xOffset;                //悬浮窗中图片的x偏移量
+    private int yOffset;                //悬浮窗中图片的y偏移量
+    private int alpha;                  //老照片的透明度
+    private float addX;                 //x方向的补充值
+    private float addY;                 //y方向的补充值
+    private int type = 0;               //0 表示横向图片，1表示竖向图片
     private int[] resIds = new int[]{   //渐变
         WITHOUT,
         R.mipmap.ic_mask,
@@ -105,32 +91,19 @@ public class HandleActivity extends AppCompatActivity  {
 
         Intent intent = getIntent();
         Bundle bundle = intent.getExtras();
-        // 获取新拍摄的照片
-        id = bundle.getString("id");//获取id
+        id = bundle.getString("id");           //获取新拍摄的照片的id
         matrixValues = bundle.getFloatArray("matrix");
         matrix.setValues(matrixValues);
-
         wm = (WindowManager) this.getSystemService(Context.WINDOW_SERVICE);
-        screenWidth = wm.getDefaultDisplay().getWidth();
+        screenWidth = wm.getDefaultDisplay().getWidth(); //屏幕的宽度1080
+        addX = ImgToolKits.addHeight * matrixValues[Matrix.MSCALE_X];
+        addY = ImgToolKits.addHeight * matrixValues[Matrix.MSCALE_Y];
 
-        /**
-         * 初始化拍摄照片
-         */
-        initPhoto();
-
-        /**
-         * 初始化老照片
-         */
-        initOldPicture();
-
-        /**
-         * 图像融合，显示老照片的像素
-         */
-//        showOldPixel();
+        initPhoto();       //初始化拍摄照片
+        initOldPicture();  //初始化老照片
+//        showOldPixel(); //图像融合，显示老照片的像素
 
     }
-
-
 
     @Override
     protected void onResume() {
@@ -144,8 +117,8 @@ public class HandleActivity extends AppCompatActivity  {
      */
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     public void initPhoto() {
-        copyPhotoBitmap = AsyncGetDataUtil.getPhotoFromFile(); //从缓存中取出图片;
-        photoBitmap = copyPhotoBitmap.copy(Bitmap.Config.ARGB_8888, true);
+        photoBitmap = AsyncGetDataUtil.getPhotoFromFile(); //取出拍摄的图片;
+//        photoBitmap = copyPhotoBitmap.copy(Bitmap.Config.ARGB_8888, true);
         photoView.setBackground(new BitmapDrawable(photoBitmap));
     }
 
@@ -157,24 +130,19 @@ public class HandleActivity extends AppCompatActivity  {
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     public void initOldPicture() {
         picFromFile = AsyncGetDataUtil.getPicFromFile(id); //从缓存中取出图片
+        if(!judgePicStyle(picFromFile)) {
+            type = 1; //如果是竖向图片，type=1
+        }
+
         //先把图片变成初始大小，然后再通过matrix变换
         borderBitmap = ImgToolKits.initBorderPic(picFromFile, screenWidth, screenWidth, false);
-        borderBitmap = Bitmap.createBitmap(borderBitmap,
-                0,0,borderBitmap.getWidth(),borderBitmap.getHeight(),
-                matrix, true);
+        borderBitmap = Bitmap.createBitmap(borderBitmap, 0, 0,
+                borderBitmap.getWidth(), borderBitmap.getHeight(), matrix, true);
         borderWidth = borderBitmap.getWidth();
         borderHeight = borderBitmap.getHeight();
 
-        if(judgePicStyle(picFromFile)) {
-            copyPicFromFile = ImgToolKits.changeBitmapSize(
-                    picFromFile, borderWidth,
-                    borderHeight - 2 * ImgToolKits.addHeight * matrixValues[Matrix.MSCALE_Y]);
-        } else {
-            copyPicFromFile = ImgToolKits.changeBitmapSize(
-                    picFromFile,
-                    borderWidth - 2 * ImgToolKits.addHeight * matrixValues[Matrix.MSCALE_X],
-                    borderHeight);
-        }
+        copyPicFromFile = ImgToolKits.changeBitmapSize(picFromFile,
+                borderWidth - 2 * addX * type, borderHeight - 2 * addY * (1 - type));
 
         float[] matrixValues = new float[9];
         matrix.getValues(matrixValues);
@@ -184,11 +152,7 @@ public class HandleActivity extends AppCompatActivity  {
         left = (int) xTrans;
         top = (int) (yTrans + photoView.getTop());
 
-        System.out.println("asdf left " + left);
-        System.out.println("asdf top "+ top);
-
         oldPictureView = new SurfaceView(this);
-        surfaceHolder = oldPictureView.getHolder();
         oldPictureView.setBackground(new BitmapDrawable(copyPicFromFile));
 
         oldPictureView.setOnKeyListener(new View.OnKeyListener() {
@@ -206,20 +170,15 @@ public class HandleActivity extends AppCompatActivity  {
         int topw = ((int)screenWidth - copyPicFromFile.getHeight()) / 2;
 
         wmParams = new WindowManager.LayoutParams();
-        if(judgePicStyle(picFromFile)) {
-            wmParams.x = left - leftw;
-            wmParams.y = (int)(top - topw + ImgToolKits.addHeight * matrixValues[Matrix.MSCALE_Y]);
-
-        } else {
-            wmParams.x = (int)(left - leftw + ImgToolKits.addHeight * matrixValues[Matrix.MSCALE_X]);
-            wmParams.y = top - topw;
-        }
+        wmParams.x = (int)(left - leftw + type * addX);
+        wmParams.y = (int)(top - topw + (1 - type) * addY);
         xOffset = wmParams.x + leftw;
         yOffset = wmParams.y + topw;
         wmParams.width = copyPicFromFile.getWidth();
         wmParams.height = copyPicFromFile.getHeight();
         wmParams.flags = FLAG_NOT_TOUCHABLE;
 //        wmParams.alpha = 0.5f;
+
         ViewGroup parent = (ViewGroup) oldPictureView.getParent();
         if (parent != null) {
             parent.removeAllViews();
@@ -277,8 +236,6 @@ public class HandleActivity extends AppCompatActivity  {
     public void clickBack() {
         onBackPressed();
     }
-
-
 
 
     /**
