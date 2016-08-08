@@ -288,7 +288,7 @@ public class HandleActivity extends AppCompatActivity  {
     }
 
     /**
-     * 点击分享按钮
+     * 转到下一个Activity
      */
     @OnClick(R.id.btnNextActivity)
     public void gotoNextActivity() {

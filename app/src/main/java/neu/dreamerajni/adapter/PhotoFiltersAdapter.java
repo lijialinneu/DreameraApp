@@ -36,6 +36,7 @@ public class PhotoFiltersAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         this.context = context;
         this.photoView = photoView;
         this.photoBitmap = photoBitmap;
+        this.dstBitmap = photoBitmap;
     }
 
     @Override
