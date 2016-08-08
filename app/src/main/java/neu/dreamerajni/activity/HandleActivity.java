@@ -26,6 +26,8 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
@@ -59,6 +61,8 @@ public class HandleActivity extends AppCompatActivity  {
 //    RecyclerView rvFilters;
     @Bind(R.id.id_alpha)
     SeekBar alphaSeekBar;
+    @Bind(R.id.btnNextActivity)
+    ImageButton nextButton;
 
     private String id; //图片的id
     private Matrix matrix = new Matrix();//前一个Activity传回的矩阵参数
@@ -89,10 +93,12 @@ public class HandleActivity extends AppCompatActivity  {
     private static final int MASK = 1;
     private Bitmap resultBitmap;
 
+    private int xOffset, yOffset;
+
 
     private int[] resIds = new int[]{       //渐变
-            WITHOUT,
-            R.mipmap.ic_mask,
+        WITHOUT,
+        R.mipmap.ic_mask,
     };
 
 
@@ -111,6 +117,8 @@ public class HandleActivity extends AppCompatActivity  {
 
         wm = (WindowManager) this.getSystemService(Context.WINDOW_SERVICE);
         screenWidth = wm.getDefaultDisplay().getWidth();
+
+//        nextButton.setOnClickListener(nextButtonClickListener);
 
         /**
          * 初始化拍摄照片
@@ -256,8 +264,17 @@ public class HandleActivity extends AppCompatActivity  {
         int topw = ((int)screenWidth - copyPicFromFile.getHeight()) / 2;
 
         wmParams = new WindowManager.LayoutParams();
-        wmParams.x = left - leftw;
-        wmParams.y = (int)(top - topw + ImgToolKits.addHeight * matrixValues[Matrix.MSCALE_Y]);
+        if(judgePicStyle(picFromFile)) {
+            wmParams.x = left - leftw;
+            wmParams.y = (int)(top - topw + ImgToolKits.addHeight * matrixValues[Matrix.MSCALE_Y]);
+        } else {
+            wmParams.x = (int)(left - leftw + ImgToolKits.addHeight * matrixValues[Matrix.MSCALE_X]);
+            wmParams.y = top - topw;
+        }
+        xOffset = wmParams.x + leftw;
+        yOffset = wmParams.y + topw;
+
+
         wmParams.width = copyPicFromFile.getWidth();
         wmParams.height = copyPicFromFile.getHeight();
         wmParams.flags = FLAG_NOT_TOUCHABLE;
@@ -437,8 +454,47 @@ public class HandleActivity extends AppCompatActivity  {
     /**
      * 点击分享按钮
      */
-    @OnClick(R.id.btnAccept)
-    public void share() {
+    @OnClick(R.id.btnNextActivity)
+    public void gotoNextActivity() {
+
+//        Bitmap picture = Bitmap.createBitmap(1080, 1080, Bitmap.Config.ARGB_8888);
+//        Canvas canvas = new Canvas(picture);
+//        View squareFrameLayoutView = squaredFrameLayout;
+//        squareFrameLayoutView.draw(canvas);
+
+        Bitmap picture = Bitmap.createBitmap(1080, 1080, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(picture);
+        Paint paint = new Paint(); // 建立画笔
+        paint.setDither(true);
+        paint.setFilterBitmap(true);
+        canvas.drawBitmap(photoBitmap, 0, 0, paint);
+        canvas.drawBitmap(resultBitmap, xOffset, yOffset, paint);
+
+
+
+        //先把图片存到SD
+        String path = FileCacheUtil.TEMPPATH; //存储JSON的路径
+        // 目录下只存一个临时文件，所以在保存之前，删除其余文件
+        FileCacheUtil.deleteFile( new File(path));
+        FileCacheUtil fileCacheUtil = new FileCacheUtil(path);
+        try {
+            fileCacheUtil.savePicture(picture, "Temp");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        //由文件得到uri
+        Uri imageUri = Uri.fromFile(new File(path + "/" + fileCacheUtil.filename));
+
+        System.out.println("asdf " + imageUri);
+
+        int[] startingLocation = new int[2];
+        nextButton.getLocationOnScreen(startingLocation);
+        startingLocation[0] += nextButton.getWidth() / 2;
+        FilterActivity.startCameraFromLocation(startingLocation, this, imageUri.toString());
+        this.overridePendingTransition(0, 0);
+
+
 //        //先把编辑后的图片存到SD
 //        String path = FileCacheUtil.EDITPATH; //存储JSON的路径
 //        FileCacheUtil fileCacheUtil = new FileCacheUtil(path);
@@ -496,23 +552,23 @@ public class HandleActivity extends AppCompatActivity  {
     }
 
 
-    public  Bitmap getTransparentBitmap(Bitmap sourceImg, int number){
-        int[] argb = new int[sourceImg.getWidth() * sourceImg.getHeight()];
-
-        sourceImg.getPixels(argb, 0, sourceImg.getWidth(), 0, 0, sourceImg
-                .getWidth(), sourceImg.getHeight());// 获得图片的ARGB值
-
-        number = number * 255 / 100;
-
-        for (int i = 0; i < argb.length; i++) {
-            argb[i] = (number << 24) | (argb[i] & 0x00FFFFFF);
-        }
-
-        sourceImg = Bitmap.createBitmap(argb, sourceImg.getWidth(), sourceImg
-                .getHeight(), Bitmap.Config.ARGB_8888);
-
-        return sourceImg;
-    }
+//    public  Bitmap getTransparentBitmap(Bitmap sourceImg, int number){
+//        int[] argb = new int[sourceImg.getWidth() * sourceImg.getHeight()];
+//
+//        sourceImg.getPixels(argb, 0, sourceImg.getWidth(), 0, 0, sourceImg
+//                .getWidth(), sourceImg.getHeight());// 获得图片的ARGB值
+//
+//        number = number * 255 / 100;
+//
+//        for (int i = 0; i < argb.length; i++) {
+//            argb[i] = (number << 24) | (argb[i] & 0x00FFFFFF);
+//        }
+//
+//        sourceImg = Bitmap.createBitmap(argb, sourceImg.getWidth(), sourceImg
+//                .getHeight(), Bitmap.Config.ARGB_8888);
+//
+//        return sourceImg;
+//    }
 
 
 }

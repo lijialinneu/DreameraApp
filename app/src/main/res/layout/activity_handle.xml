@@ -66,7 +66,7 @@
                     android:layout_weight="1" />
 
                 <ImageButton
-                    android:id="@+id/btnAccept"
+                    android:id="@+id/btnNextActivity"
                     android:layout_width="36dp"
                     android:layout_height="36dp"
                     android:background="@drawable/btn_default_light"

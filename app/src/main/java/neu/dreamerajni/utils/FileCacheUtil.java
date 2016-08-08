@@ -26,6 +26,7 @@ public class FileCacheUtil {
     public static final String PICTUREPATH = STORAGE + "/Dreamera/resource/picture"; //缓存图片
     public static final String CAMERAPATH = STORAGE +  "/Dreamera/photo/camera"; //存储拍摄后的照片
     public static final String EDITPATH = STORAGE +  "/Dreamera/photo/edit"; //存储编辑后的图片
+    public static final String TEMPPATH = STORAGE + "/Dreamera/photo/temp"; //存储临时文件
 
     public String filename;
 
@@ -309,9 +310,6 @@ public class FileCacheUtil {
         }
         return bitmap;
     }
-
-
-
 
 
     /**
