@@ -57,9 +57,11 @@ public class PhotoFiltersAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
             @Override
             public void onClick(View v) {
+
+                System.out.println("asdf here");
                 BaseFilter bf = ff.createFilter(position);
                 dstBitmap = bf.filterBitmap();
-                photoView.setBackground(new BitmapDrawable(dstBitmap));
+                photoView.setImageBitmap(dstBitmap);
             }
         });
     }

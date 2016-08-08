@@ -44,7 +44,7 @@
                     android:layout_width="36dp"
                     android:layout_height="36dp"
                     android:background="@drawable/btn_default_light"
-                    android:src="@mipmap/ic_return" />
+                    android:src="@mipmap/ic_edit_white_24dp" />
 
                 <ImageButton
                     android:layout_width="36dp"
@@ -90,35 +90,6 @@
 
         </neu.dreamerajni.view.SquaredFrameLayout>
 
-        <!-- 中后部滑动条 -->
-        <!--<RelativeLayout-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="wrap_content">-->
-
-            <!--<LinearLayout-->
-                <!--android:layout_width="match_parent"-->
-                <!--android:layout_height="wrap_content"-->
-                <!--android:orientation="vertical">-->
-
-                <!--<SeekBar-->
-                    <!--android:layout_width="match_parent"-->
-                    <!--android:layout_height="wrap_content"-->
-                    <!--android:id="@+id/id_alpha"-->
-                    <!--android:background="#16181a"-->
-                    <!--android:max="100"-->
-                    <!--android:progress="0" />-->
-
-                <!--<SeekBar-->
-                    <!--android:layout_width="match_parent"-->
-                    <!--android:layout_height="wrap_content"-->
-                    <!--android:id="@+id/id_blur"-->
-                    <!--android:background="#16181a"-->
-                    <!--android:progress="0" />-->
-
-            <!--</LinearLayout>-->
-
-        <!--</RelativeLayout>-->
-
         <!-- 底部 -->
         <RelativeLayout
             android:layout_width="match_parent"
@@ -128,37 +99,66 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true">
 
-                <SeekBar
+                <!-- 透明度滑块 -->
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:id="@+id/id_alpha"
-                    android:background="#16181a"
-                    android:max="255"
-                    android:progress="0" />
+                    android:orientation="horizontal">
 
-                <SeekBar
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:text="@string/adjustAlpha"
+                        android:textColor="@color/colorBanner"
+                        android:gravity="center" />
+
+                    <SeekBar
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/id_alpha"
+                        android:thumb="@mipmap/ic_cloud"
+                        android:max="255"
+                        android:maxHeight="5dp"
+                        android:layout_gravity="center"
+                        android:progressDrawable="@drawable/seekbar_style"
+                        android:progress="0" />
+
+                </LinearLayout>
+
+                <!-- 范围滑块 -->
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:id="@+id/id_blur"
-                    android:background="#16181a"
-                    android:progress="0" />
+                    android:orientation="horizontal"
+                    android:gravity="center"
+                    android:layout_weight="1">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:text="@string/adjustRange"
+                        android:textColor="@color/colorBanner"
+                        android:gravity="center" />
+
+                    <SeekBar
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/id_blur"
+                        android:thumb="@mipmap/ic_cloud"
+                        android:maxHeight="5dp"
+                        android:layout_gravity="center"
+                        android:progressDrawable="@drawable/seekbar_style"
+                        android:progress="0" />
+
+                </LinearLayout>
 
             </LinearLayout>
-
-            <!--<LinearLayout-->
-                <!--android:layout_width="match_parent"-->
-                <!--android:layout_height="match_parent">-->
-
-                <!--<android.support.v7.widget.RecyclerView-->
-                    <!--android:id="@+id/rvFilters"-->
-                    <!--android:layout_width="match_parent"-->
-                    <!--android:layout_height="match_parent"-->
-                    <!--android:scrollbars="none" />-->
-            <!--</LinearLayout>-->
 
         </RelativeLayout>
 

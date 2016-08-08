@@ -13,4 +13,8 @@
     <!--add on 2016-06-07 by 10405-->
     <string name="no_net">网络连接断开</string>
     <string name="title_activity_camera">CameraActivity</string>
+
+    <string name="adjustAlpha">透明度：</string>
+    <string name="adjustRange">模糊域：</string>
+
 </resources>
