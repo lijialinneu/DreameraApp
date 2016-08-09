@@ -28,14 +28,12 @@ import android.widget.SeekBar;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.BreakIterator;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import neu.dreamerajni.R;
 import neu.dreamerajni.utils.AsyncGetDataUtil;
-import neu.dreamerajni.utils.FastBlur;
 import neu.dreamerajni.utils.FileCacheUtil;
 import neu.dreamerajni.utils.ImgToolKits;
 import neu.dreamerajni.view.SquaredFrameLayout;
@@ -78,7 +76,6 @@ public class HandleActivity extends AppCompatActivity  {
     private float yTrans = 0;           //变换矩阵中的y方向位移的值
     private Bitmap maskBitmap;          //遮罩mask处理
     private Bitmap resultBitmap;        //最终结果图片
-    private Bitmap copyResultBitmap;    //最终结果图片的副本
     private final int WITHOUT = -1;
     private static final int MASK = 1;
     private int xOffset = 0;            //悬浮窗中图片的x偏移量
@@ -87,16 +84,10 @@ public class HandleActivity extends AppCompatActivity  {
     private float addX = 0;             //x方向的补充值
     private float addY = 0;             //y方向的补充值
     private int type = 0;               //0 表示横向图片，1表示竖向图片
-//    private int[] resIds = new int[]{   //渐变
-//        WITHOUT,
-//        R.mipmap.ic_mask,
-//    };
-    private int w;
-    private int h;
-    private int[] picPixels;
-    private int[] maskPixels;
-
-    private Bitmap test;
+    private int w;                      //copyPicFromFile的width
+    private int h;                      //copyPicFromFile的height
+    private int[] picPixels;            //用于存储copyPicFromFile像素值得矩阵
+    private int[] maskPixels;           //用于存储maskBitmap像素值得矩阵
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -118,8 +109,6 @@ public class HandleActivity extends AppCompatActivity  {
         initOldPicture();  //初始化老照片
 //        showOldPixel(); //图像融合，显示老照片的像素
 
-        test =  BitmapFactory.decodeResource(this.getResources(), R.mipmap.test);
-
     }
 
     @Override
@@ -136,7 +125,6 @@ public class HandleActivity extends AppCompatActivity  {
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     public void initPhoto() {
         photoBitmap = AsyncGetDataUtil.getPhotoFromFile(); //取出拍摄的图片;
-//        photoBitmap = copyPhotoBitmap.copy(Bitmap.Config.ARGB_8888, true);
         photoView.setBackground(new BitmapDrawable(photoBitmap));
     }
 
@@ -161,7 +149,8 @@ public class HandleActivity extends AppCompatActivity  {
 
         copyPicFromFile = ImgToolKits.changeBitmapSize(picFromFile,
                 borderWidth - 2 * addX * type, borderHeight - 2 * addY * (1 - type));
-
+        w = copyPicFromFile.getWidth();
+        h = copyPicFromFile.getHeight();
         float[] matrixValues = new float[9];    //读取变换矩阵
         matrix.getValues(matrixValues);
         xTrans = matrixValues[Matrix.MTRANS_X]; //x位移值
@@ -213,8 +202,7 @@ public class HandleActivity extends AppCompatActivity  {
         maskBitmap = BitmapFactory.decodeResource(this.getResources(), R.mipmap.ic_mask);
         maskBitmap = Bitmap.createScaledBitmap(maskBitmap,
                 copyPicFromFile.getWidth(), copyPicFromFile.getHeight(), false);
-        w = copyPicFromFile.getWidth();
-        h = copyPicFromFile.getHeight();
+
         resultBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
 
         //前置相片添加蒙板效果
@@ -225,9 +213,11 @@ public class HandleActivity extends AppCompatActivity  {
         maskBitmap.getPixels(maskPixels, 0, w, 0, 0, w, h);
 
         composite();
-
     }
 
+    /**
+     * 老照片与mask的融合
+     */
     public void composite() {
         int x, y, px, py;
         for(int i = 0; i < maskPixels.length; i++) {
@@ -254,9 +244,7 @@ public class HandleActivity extends AppCompatActivity  {
 
         //生成前置图片添加蒙板后的bitmap:resultBitmap
         resultBitmap.setPixels(picPixels, 0, w, 0, 0, w, h);
-//        copyResultBitmap = resultBitmap.copy(Bitmap.Config.ARGB_8888, true);
         oldPictureView.setBackground(new BitmapDrawable(resultBitmap));
-//        oldPictureView.setBackground(new BitmapDrawable(maskBitmap));
     }
 
 
@@ -318,7 +306,6 @@ public class HandleActivity extends AppCompatActivity  {
         startingLocation[0] += nextButton.getWidth() / 2;
         FilterActivity.startFilterFromLocation(startingLocation, HandleActivity.this, imageUri.toString());
         this.overridePendingTransition(0, 0);
-
     }
 
 
@@ -353,40 +340,32 @@ public class HandleActivity extends AppCompatActivity  {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 float radius = (progress + 1) / 4.f;
-//                int radius = progress + 1;
-                float scale = 0.1f;  /* 设置图片缩小的比例 */
+                float scale = 0.1f;  //设置图片缩小的比例
                  /* 产生reSize后的Bitmap对象 */
                 Matrix matrix = new Matrix();
                 matrix.postScale(scale, scale);
-                Bitmap smallMask = Bitmap.createBitmap(maskBitmap,0,0,maskBitmap.getWidth(),
+//                Bitmap presentBitmap = ((BitmapDrawable) oldPictureView.getBackground()).getBitmap();
+                Bitmap smallMask = Bitmap.createBitmap(
+                        maskBitmap,0,0,maskBitmap.getWidth(),
                         maskBitmap.getHeight(), matrix, true);
-                System.out.println("asdf mask " + maskBitmap.getWidth() +" " +maskBitmap.getHeight());
-
-//                System.out.println("asdf " + maskBitmap.getWidth() + " " +maskBitmap.getHeight());
-//                Bitmap blurMask = FastBlur.doBlur(maskBitmap, radius, true);
-
-
                 Bitmap blurMask = blurBitmap(smallMask, radius);
-//                System.out.println("asdf r " + radius);
 
-                 /* 产生reSize后的Bitmap对象 */
+                 // 产生reSize后的Bitmap对象
                 matrix = new Matrix();
                 matrix.postScale(1/scale, 1/scale);
-//                Bitmap bigMask = Bitmap.createBitmap(blurMask,0,0,smallMask.getWidth(),
-//                        smallMask.getHeight(), matrix, true);
                 Bitmap bigMask = Bitmap.createScaledBitmap(blurMask, w, h, false);
 
-//                oldPictureView.setBackground(new BitmapDrawable(bigMask));
-                System.out.println("asdf w h " + w + " " + h);
-                System.out.println("asdf bigmask " + bigMask.getWidth() + " " +bigMask.getHeight());
-
-//                //前置相片添加蒙板效果
+                //前置相片添加蒙板效果
                 picPixels = new int[w * h];
                 maskPixels = new int[w * h];
                 copyPicFromFile.getPixels(picPixels, 0, w, 0, 0, w, h);
                 bigMask.getPixels(maskPixels, 0, w, 0, 0, w, h);
                 composite();
-
+                oldPictureView.getBackground().setAlpha(alpha); //别忘了设置透明度
+//                presentBitmap.recycle();
+//                smallMask.recycle();
+//                blurMask.recycle();
+//                bigMask.recycle();
             }
 
             @Override
@@ -419,7 +398,6 @@ public class HandleActivity extends AppCompatActivity  {
         Allocation allOut = Allocation.createFromBitmap(rs, outBitmap);
 
         //Set the radius of the blur
-//        blurScript.setRadius(25.f);
         blurScript.setRadius(radius);
 
         //Perform the Renderscript
