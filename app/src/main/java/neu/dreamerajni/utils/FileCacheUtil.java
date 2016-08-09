@@ -22,11 +22,11 @@ public class FileCacheUtil {
 
     private String path; //路径
     public static final File STORAGE = Environment.getExternalStorageDirectory();
-    public static final String JSONPATH = STORAGE + "/Dreamera/resource/data"; //缓存JSON数据、该目录下只存一个文件，时间一到就更新
+    public static final String JSONPATH = STORAGE + "/Dreamera/resource/data";       //缓存JSON数据、该目录下只存一个文件，时间一到就更新
     public static final String PICTUREPATH = STORAGE + "/Dreamera/resource/picture"; //缓存图片
-    public static final String CAMERAPATH = STORAGE +  "/Dreamera/photo/camera"; //存储拍摄后的照片
-    public static final String EDITPATH = STORAGE +  "/Dreamera/photo/edit"; //存储编辑后的图片
-    public static final String TEMPPATH = STORAGE + "/Dreamera/photo/temp"; //存储临时文件
+    public static final String CAMERAPATH = STORAGE +  "/Dreamera/photo/camera";     //存储拍摄后的照片
+    public static final String EDITPATH = STORAGE +  "/Dreamera/photo/edit";         //存储编辑后的图片
+    public static final String TEMPPATH = STORAGE + "/Dreamera/photo/temp";          //存储临时文件
 
     public String filename;
 

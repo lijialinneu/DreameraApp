@@ -25,9 +25,9 @@ import java.util.Map;
 
 public class AsyncGetDataUtil {
 
-    public static String jsonString; //JSON字符串
-    public static Bitmap bitmap;//图片资源
-    public static boolean jsonUpdate = false;//json是否更新
+    public static String jsonString;           //JSON字符串
+    public static Bitmap bitmap;               //图片资源
+    public static boolean jsonUpdate = false;  //json是否更新
 
     /**
      * 获取缓存的JSON数据

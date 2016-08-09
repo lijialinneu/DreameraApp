@@ -1,6 +1,5 @@
 package neu.dreamerajni.activity;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
@@ -12,7 +11,6 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ImageView;
-import android.widget.Toast;
 
 import com.baidu.mapapi.SDKInitializer;
 
@@ -21,7 +19,6 @@ import butterknife.ButterKnife;
 import neu.dreamerajni.R;
 import neu.dreamerajni.utils.APPUtils;
 import neu.dreamerajni.utils.BMapControlUtil;
-import neu.dreamerajni.utils.HttpConnectionUtil;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -129,12 +126,29 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
+
+
+    @Override
+    protected void onStart(){
+        super.onStart();
+
+        // 开启图层定位
+        if(bMapControlUtil != null) {
+            bMapControlUtil.baiduMap.setMyLocationEnabled(true);
+            if (!bMapControlUtil.mLocationClient.isStarted()) {
+                bMapControlUtil.mLocationClient.start();
+            }
+            // 开启方向传感器
+        bMapControlUtil.myOrientationListener.start();
+        }
+    }
+
     @Override
     protected void onDestroy(){
         super.onDestroy();
         // 在activity执行onDestroy时执行mMapView.onDestroy()，
         // 实现地图生命周期管理
-        if(bMapControlUtil !=null){
+        if(bMapControlUtil != null){
             bMapControlUtil.mapView.onDestroy();
             bMapControlUtil.mapView = null;
         }
@@ -144,7 +158,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onResume(){
         super.onResume();
-        if(bMapControlUtil !=null){
+        if(bMapControlUtil != null){
             bMapControlUtil.mapView.onResume();
         }
     }
@@ -153,8 +167,21 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onPause(){
         super.onPause();
-        if(bMapControlUtil !=null){
+        if(bMapControlUtil != null){
             bMapControlUtil.mapView.onPause();
+        }
+    }
+
+    @Override
+    protected void onStop(){
+        super.onStop();
+
+        // 关闭图层定位
+        if(bMapControlUtil != null) {
+            bMapControlUtil.baiduMap.setMyLocationEnabled(false);
+            bMapControlUtil.mLocationClient.stop();
+            // 关闭方向传感器
+            bMapControlUtil.myOrientationListener.stop();
         }
     }
 }

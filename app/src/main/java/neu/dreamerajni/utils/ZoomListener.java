@@ -20,8 +20,8 @@ public class ZoomListener implements ScaleGestureDetector.OnScaleGestureListener
     private final int ZOOMMODE = 2; //放缩状态
     private int mode = INITMODE;
 
-    private float initX, initY;//第一次触摸的x、y值
-    private float lastX, lastY;//第一次触摸的x、y值
+    private float initX, initY;     //第一次触摸的x、y值
+    private float lastX, lastY;     //第一次触摸的x、y值
     private boolean flag = true;
 
     private ScaleGestureDetector mScaleGestureDetector = null;

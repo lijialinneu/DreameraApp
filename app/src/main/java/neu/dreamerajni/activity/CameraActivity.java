@@ -66,17 +66,15 @@ public class CameraActivity extends AppCompatActivity implements
     @Bind(R.id.btnTakePhoto)
     Button btnTakePhoto;
 
-    private String pictureID; //从上一个Activity传递过来的图片的ID
-    private SurfaceView surfaceView; //绘制边缘图
+    private String pictureID;            //从上一个Activity传递过来的图片的ID
+    private SurfaceView surfaceView;     //surfaceView用于绘制边缘图
     private SurfaceHolder surfaceHolder;
-    private int zoom = 0; //相机焦距
-
-    private Bitmap picFromFile;
-    private Bitmap borderBitmap;
+    private int zoom = 0;                //相机焦距
+    private Bitmap picFromFile;          //老照片
+    private Bitmap borderBitmap;         //边缘图
     private WindowManager wm;
     private WindowManager.LayoutParams wmParams;
-    private Matrix lastMatrix = new Matrix();
-
+    private Matrix lastMatrix = new Matrix();  //初始化变换矩阵
     private  Canvas canvas;
 
     /**
