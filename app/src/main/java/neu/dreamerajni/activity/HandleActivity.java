@@ -233,11 +233,13 @@ public class HandleActivity extends AppCompatActivity  {
                 }else if(maskPixels[i] == 0){ //透明色
                     //pass
                 }else{
-                        //把mask的a通道与picBitmap与
-                        maskPixels[i] &= 0xff000000;
-                        maskPixels[i] = 0xff000000 - maskPixels[i];
-                        picPixels[i] &= 0x00ffffff;
-                        picPixels[i] |= maskPixels[i];
+                    //把mask的a通道与picBitmap与
+                    maskPixels[i] &= 0xff000000; //高两位位表示透明度，ff表示完全不透明
+                    //mask是中间透明，四周不透明；copyPicFromFile是中间不透明，四周透明
+                    //所以需要做一个减法
+                    maskPixels[i] = 0xff000000 - maskPixels[i];
+                    picPixels[i] &= 0x00ffffff; //提取出copyPicFromFile某点的alpha值
+                    picPixels[i] |= maskPixels[i]; //做 “或”运算，合成alpha
                 }
             }
         }
