@@ -11,6 +11,10 @@ import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Build;
+import android.renderscript.Allocation;
+import android.renderscript.Element;
+import android.renderscript.RenderScript;
+import android.renderscript.ScriptIntrinsicBlur;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.KeyEvent;
@@ -24,12 +28,14 @@ import android.widget.SeekBar;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.BreakIterator;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import neu.dreamerajni.R;
 import neu.dreamerajni.utils.AsyncGetDataUtil;
+import neu.dreamerajni.utils.FastBlur;
 import neu.dreamerajni.utils.FileCacheUtil;
 import neu.dreamerajni.utils.ImgToolKits;
 import neu.dreamerajni.view.SquaredFrameLayout;
@@ -48,6 +54,8 @@ public class HandleActivity extends AppCompatActivity  {
     SquaredFrameLayout squaredFrameLayout;
     @Bind(R.id.id_alpha)
     SeekBar alphaSeekBar;
+    @Bind(R.id.id_blur)
+    SeekBar blurSeekBar;
     @Bind(R.id.btnNextActivity)
     ImageButton nextButton;
 
@@ -64,12 +72,13 @@ public class HandleActivity extends AppCompatActivity  {
     private int borderWidth = 0;        //边缘图片的宽
     private int borderHeight = 0;       //边缘图片的高
     private int left = 0;               //老照片的left
-    private int top = 0;                // 老照片的top
+    private int top = 0;                //老照片的top
     private float screenWidth = 0;      //屏幕宽度，相机预览画面的宽度与屏幕的宽度相等
     private float xTrans = 0;           //变换矩阵中的x方向位移的值
     private float yTrans = 0;           //变换矩阵中的y方向位移的值
-    private Bitmap maskBitmap;          // 遮罩mask处理
+    private Bitmap maskBitmap;          //遮罩mask处理
     private Bitmap resultBitmap;        //最终结果图片
+    private Bitmap copyResultBitmap;    //最终结果图片的副本
     private final int WITHOUT = -1;
     private static final int MASK = 1;
     private int xOffset = 0;            //悬浮窗中图片的x偏移量
@@ -78,11 +87,16 @@ public class HandleActivity extends AppCompatActivity  {
     private float addX = 0;             //x方向的补充值
     private float addY = 0;             //y方向的补充值
     private int type = 0;               //0 表示横向图片，1表示竖向图片
-    private int[] resIds = new int[]{   //渐变
-        WITHOUT,
-        R.mipmap.ic_mask,
-    };
+//    private int[] resIds = new int[]{   //渐变
+//        WITHOUT,
+//        R.mipmap.ic_mask,
+//    };
+    private int w;
+    private int h;
+    private int[] picPixels;
+    private int[] maskPixels;
 
+    private Bitmap test;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,12 +118,15 @@ public class HandleActivity extends AppCompatActivity  {
         initOldPicture();  //初始化老照片
 //        showOldPixel(); //图像融合，显示老照片的像素
 
+        test =  BitmapFactory.decodeResource(this.getResources(), R.mipmap.test);
+
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        adjustAlpha(); // 初始化滑块,调整老照片的alpha值
+        adjustAlpha(); //初始化滑块,调整老照片的alpha值
+        adjustBlur();  //调整模糊范围
     }
 
     /**
@@ -193,72 +210,53 @@ public class HandleActivity extends AppCompatActivity  {
      * 添加mask
      */
     public void addMask() {
-        maskBitmap = BitmapFactory.decodeResource(this.getResources(), resIds[MASK]);
+        maskBitmap = BitmapFactory.decodeResource(this.getResources(), R.mipmap.ic_mask);
         maskBitmap = Bitmap.createScaledBitmap(maskBitmap,
                 copyPicFromFile.getWidth(), copyPicFromFile.getHeight(), false);
-        int w = copyPicFromFile.getWidth();
-        int h = copyPicFromFile.getHeight();
+        w = copyPicFromFile.getWidth();
+        h = copyPicFromFile.getHeight();
         resultBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
 
-//        //前置相片添加蒙板效果
-//        int[] picPixels = new int[w * h];
-//        int[] maskPixels = new int[w * h];
-//
-//        copyPicFromFile.getPixels(picPixels, 0, w, 0, 0, w, h);
-//        maskBitmap.getPixels(maskPixels, 0, w, 0, 0, w, h);
-//
-//        for(int i = 0; i < maskPixels.length; i++) {
-//            if(maskPixels[i] == 0xff000000){ //黑色
-//                picPixels[i] = 0;
-//            }else if(maskPixels[i] == 0){ //透明色
-//                //pass
-//            }else{
-//                //把mask的a通道与picBitmap与
-//                maskPixels[i] &= 0xff000000;
-//                maskPixels[i] = 0xff000000 - maskPixels[i];
-//                picPixels[i] &= 0x00ffffff;
-//                picPixels[i] |= maskPixels[i];
-//            }
-//        }
-
         //前置相片添加蒙板效果
-        int[] picPixels = new int[w * h];
-        int[] maskPixels = new int[w * h];
+        picPixels = new int[w * h];
+        maskPixels = new int[w * h];
 
         copyPicFromFile.getPixels(picPixels, 0, w, 0, 0, w, h);
         maskBitmap.getPixels(maskPixels, 0, w, 0, 0, w, h);
 
+        composite();
+
+    }
+
+    public void composite() {
         int x, y, px, py;
         for(int i = 0; i < maskPixels.length; i++) {
-
             y = i / w;
-            x = i - (y - 1) * w;
+//            x = i - (y - 1) * w;
             py = yOffset + y + photoView.getTop();
-            px = xOffset + x;
-
-
+//            px = xOffset + x;
             if(py <= photoView.getTop() || py >= photoView.getTop() + screenWidth) {
-//                i = i + w - 1;
                 picPixels[i] = 0;
-            } else{
+            }else {
                 if(maskPixels[i] == 0xff000000){ //黑色
                     picPixels[i] = 0;
                 }else if(maskPixels[i] == 0){ //透明色
                     //pass
                 }else{
-                    //把mask的a通道与picBitmap与
-                    maskPixels[i] &= 0xff000000;
-                    maskPixels[i] = 0xff000000 - maskPixels[i];
-                    picPixels[i] &= 0x00ffffff;
-                    picPixels[i] |= maskPixels[i];
+                        //把mask的a通道与picBitmap与
+                        maskPixels[i] &= 0xff000000;
+                        maskPixels[i] = 0xff000000 - maskPixels[i];
+                        picPixels[i] &= 0x00ffffff;
+                        picPixels[i] |= maskPixels[i];
                 }
             }
         }
 
-
         //生成前置图片添加蒙板后的bitmap:resultBitmap
         resultBitmap.setPixels(picPixels, 0, w, 0, 0, w, h);
+//        copyResultBitmap = resultBitmap.copy(Bitmap.Config.ARGB_8888, true);
         oldPictureView.setBackground(new BitmapDrawable(resultBitmap));
+//        oldPictureView.setBackground(new BitmapDrawable(maskBitmap));
     }
 
 
@@ -325,10 +323,9 @@ public class HandleActivity extends AppCompatActivity  {
 
 
     /**
-     * 调整图片的alpha值
+     * 第一个SeekBar调整图片的alpha值
      */
     public void adjustAlpha() {
-
         alphaSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -347,5 +344,102 @@ public class HandleActivity extends AppCompatActivity  {
             }
         });
     }
+
+    /**
+     * 第二个SeekBar调整图片的alpha值
+     */
+    public void adjustBlur() {
+        blurSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                float radius = (progress + 1) / 4.f;
+//                int radius = progress + 1;
+                float scale = 0.1f;  /* 设置图片缩小的比例 */
+                 /* 产生reSize后的Bitmap对象 */
+                Matrix matrix = new Matrix();
+                matrix.postScale(scale, scale);
+                Bitmap smallMask = Bitmap.createBitmap(maskBitmap,0,0,maskBitmap.getWidth(),
+                        maskBitmap.getHeight(), matrix, true);
+                System.out.println("asdf mask " + maskBitmap.getWidth() +" " +maskBitmap.getHeight());
+
+//                System.out.println("asdf " + maskBitmap.getWidth() + " " +maskBitmap.getHeight());
+//                Bitmap blurMask = FastBlur.doBlur(maskBitmap, radius, true);
+
+
+                Bitmap blurMask = blurBitmap(smallMask, radius);
+//                System.out.println("asdf r " + radius);
+
+                 /* 产生reSize后的Bitmap对象 */
+                matrix = new Matrix();
+                matrix.postScale(1/scale, 1/scale);
+//                Bitmap bigMask = Bitmap.createBitmap(blurMask,0,0,smallMask.getWidth(),
+//                        smallMask.getHeight(), matrix, true);
+                Bitmap bigMask = Bitmap.createScaledBitmap(blurMask, w, h, false);
+
+//                oldPictureView.setBackground(new BitmapDrawable(bigMask));
+                System.out.println("asdf w h " + w + " " + h);
+                System.out.println("asdf bigmask " + bigMask.getWidth() + " " +bigMask.getHeight());
+
+//                //前置相片添加蒙板效果
+                picPixels = new int[w * h];
+                maskPixels = new int[w * h];
+                copyPicFromFile.getPixels(picPixels, 0, w, 0, 0, w, h);
+                bigMask.getPixels(maskPixels, 0, w, 0, 0, w, h);
+                composite();
+
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                // TODO Auto-generated method stub
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                // TODO Auto-generated method stub
+            }
+        });
+    }
+
+
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
+    public Bitmap blurBitmap(Bitmap bitmap, float radius){
+
+        //Let's create an empty bitmap with the same size of the bitmap we want to blur
+        Bitmap outBitmap = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
+
+        //Instantiate a new Renderscript
+        RenderScript rs = RenderScript.create(getApplicationContext());
+
+        //Create an Intrinsic Blur Script using the Renderscript
+        ScriptIntrinsicBlur blurScript = ScriptIntrinsicBlur.create(rs, Element.U8_4(rs));
+
+        //Create the Allocations (in/out) with the Renderscript and the in/out bitmaps
+        Allocation allIn = Allocation.createFromBitmap(rs, bitmap);
+        Allocation allOut = Allocation.createFromBitmap(rs, outBitmap);
+
+        //Set the radius of the blur
+//        blurScript.setRadius(25.f);
+        blurScript.setRadius(radius);
+
+        //Perform the Renderscript
+        blurScript.setInput(allIn);
+        blurScript.forEach(allOut);
+
+        //Copy the final bitmap created by the out Allocation to the outBitmap
+        allOut.copyTo(outBitmap);
+
+        //recycle the original bitmap
+//        bitmap.recycle();
+
+        //After finishing everything, we destroy the Renderscript.
+        rs.destroy();
+
+        return outBitmap;
+
+
+    }
+
+
 
 }

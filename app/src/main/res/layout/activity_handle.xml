@@ -153,6 +153,7 @@
                         android:thumb="@mipmap/ic_cloud"
                         android:maxHeight="5dp"
                         android:layout_gravity="center"
+                        android:max="99"
                         android:progressDrawable="@drawable/seekbar_style"
                         android:progress="0" />
 

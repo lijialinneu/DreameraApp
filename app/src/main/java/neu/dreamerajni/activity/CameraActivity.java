@@ -308,12 +308,17 @@ public class CameraActivity extends AppCompatActivity implements
             getWindow().getDecorView().getWindowVisibleDisplayFrame(frame);
             int statusBarHeight = frame.top;
 
-            bitmap = Bitmap.createBitmap(bitmap,
-                    vTakePhotoRoot.getLeft(),
-                    vTakePhotoRoot.getTop() + statusBarHeight,
-                    vTakePhotoRoot.getWidth(),
-                    vTakePhotoRoot.getHeight()
-            );
+            try { //TODO 此处有BUG
+                bitmap = Bitmap.createBitmap(bitmap,
+                        vTakePhotoRoot.getLeft(),
+                        vTakePhotoRoot.getTop() + statusBarHeight,
+                        vTakePhotoRoot.getWidth(),
+                        vTakePhotoRoot.getHeight()
+                );
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+
             try {
                 fileCacheUtil.savePicture(bitmap, "Photo");
             } catch (IOException e) {
