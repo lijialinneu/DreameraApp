@@ -41,26 +41,18 @@ import neu.dreamerajni.utils.BMapControlUtil;
 public class MarkerPopupWindowView extends View{
 
     @Bind(R.id.id_close_popup)
-    ImageButton closeButton; //关闭按钮
+    ImageButton closeButton;      //关闭按钮
     @Bind(R.id.id_marker_info)
-    LinearLayout markerInfoLy; // 地图弹出窗口
+    LinearLayout markerInfoLy;    // 地图弹出窗口
     @Bind(R.id.id_marker_name)
-    TextView nameView; //弹出窗口中的名字
-
-//    @Bind(R.id.cameraButton)
-//    FloatingActionButton cameraButton; //照相机对view
-//    @Bind(R.id.id_gallery)
-//    RecyclerView gallery;
+    TextView nameView;            //弹出窗口中的名字
 
     private static FloatingActionButton cameraButton;
     private static RecyclerView gallery;
-//    private static int len = 0; //图片list的长度
-//    private static int lastSelectedTag = -1; //上一次选中的图片的索引
     private static String intentPID; // 图片的ID作为参数传递到CameraActivity
 
     public Activity activity;
-    private LayoutInflater mInflater;
-//    private AsyncGetPicTask asyncGetPicTask;
+//    private LayoutInflater mInflater;
     private boolean NEVERPOPUP = true;
     private String noDataTip = "该处暂无数据";
     private static ImageView flagView;
@@ -75,7 +67,7 @@ public class MarkerPopupWindowView extends View{
         super(context);
         this.activity = (Activity) context;
         ButterKnife.bind(this, activity);
-        mInflater = LayoutInflater.from(activity);
+//        mInflater = LayoutInflater.from(activity);
 
         cameraButton = (FloatingActionButton) activity.findViewById(R.id.cameraButton);
         gallery = (RecyclerView) activity.findViewById(R.id.id_gallery);
@@ -160,28 +152,21 @@ public class MarkerPopupWindowView extends View{
     public static class MyImgClickListener implements View.OnClickListener {
 
         private String pictureId;
-        private String url;
+//        private String url;
 
-        public MyImgClickListener(String pictureId, String url){
+        public MyImgClickListener(String pictureId){
             this.pictureId = pictureId;
-            this.url = url;
+//            this.url = url;
         }
 
         @Override
         public void onClick(View v) {
-            deleteOldSelected(); // 清除以前选中图片的对号小图标
+            deleteOldSelected();       // 清除以前选中图片的对号小图标
             int i =  (int) v.getTag(); // 显示对号小图标
-
-//            ImageView flag = (ImageView) gallery.findViewWithTag(i + "a");
-//            flag.setVisibility(View.VISIBLE);
-
             flagView = (ImageView) gallery.findViewWithTag(i + "a");
             flagView.setVisibility(VISIBLE);
-
-//            lastSelectedTag = i;
             cameraButton.setVisibility(View.VISIBLE);
-
-            intentPID = pictureId; //设置Activity间传递的参数
+            intentPID = pictureId;     //设置Activity间传递的参数
         }
     }
 
@@ -193,14 +178,6 @@ public class MarkerPopupWindowView extends View{
         if(flagView != null) {
             flagView.setVisibility(GONE);
         }
-//        if(lastSelectedTag != -1) {
-//            if(len > lastSelectedTag){
-//                ImageView lastSelectedView = (ImageView) gallery.findViewWithTag(lastSelectedTag + "a");
-//                if(lastSelectedView != null) {
-//                    lastSelectedView.setVisibility(View.GONE);
-//                }
-//            }
-//        }
     }
 
 

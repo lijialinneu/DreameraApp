@@ -2,11 +2,11 @@
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/activity_handle"
+    android:id="@+id/activity_fusion"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#16181a"
-    tools:context="neu.dreamerajni.activity.HandleActivity">
+    tools:context="neu.dreamerajni.activity.FusionActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -126,7 +126,7 @@
                         android:max="255"
                         android:maxHeight="5dp"
                         android:layout_gravity="center"
-                        android:progressDrawable="@drawable/seekbar_style"
+                        android:progressDrawable="@drawable/po_seekbar"
                         android:progress="0" />
 
                 </LinearLayout>
@@ -154,7 +154,7 @@
                         android:maxHeight="5dp"
                         android:layout_gravity="center"
                         android:max="99"
-                        android:progressDrawable="@drawable/seekbar_style"
+                        android:progressDrawable="@drawable/po_seekbar"
                         android:progress="0" />
 
                 </LinearLayout>

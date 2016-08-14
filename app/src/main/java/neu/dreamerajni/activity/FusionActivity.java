@@ -44,7 +44,7 @@ import static android.view.WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS;
 
 @SuppressWarnings("deprecation")
 @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
-public class HandleActivity extends AppCompatActivity  {
+public class FusionActivity extends AppCompatActivity  {
 
     @Bind(R.id.photoView)
     ImageView photoView; //拍摄的照片
@@ -76,8 +76,6 @@ public class HandleActivity extends AppCompatActivity  {
     private float yTrans = 0;           //变换矩阵中的y方向位移的值
     private Bitmap maskBitmap;          //遮罩mask处理
     private Bitmap resultBitmap;        //最终结果图片
-    private final int WITHOUT = -1;
-    private static final int MASK = 1;
     private int xOffset = 0;            //悬浮窗中图片的x偏移量
     private int yOffset = 0;            //悬浮窗中图片的y偏移量
     private int alpha = 255;            //老照片的透明度
@@ -92,7 +90,7 @@ public class HandleActivity extends AppCompatActivity  {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_handle);
+        setContentView(R.layout.activity_fusion);
         ButterKnife.bind(this);
 
         Intent intent = getIntent();
@@ -107,7 +105,6 @@ public class HandleActivity extends AppCompatActivity  {
 
         initPhoto();       //初始化拍摄照片
         initOldPicture();  //初始化老照片
-//        showOldPixel(); //图像融合，显示老照片的像素
 
     }
 
@@ -212,6 +209,8 @@ public class HandleActivity extends AppCompatActivity  {
         copyPicFromFile.getPixels(picPixels, 0, w, 0, 0, w, h);
         maskBitmap.getPixels(maskPixels, 0, w, 0, 0, w, h);
 
+
+
         composite();
     }
 
@@ -306,7 +305,7 @@ public class HandleActivity extends AppCompatActivity  {
         int[] startingLocation = new int[2];
         nextButton.getLocationOnScreen(startingLocation);
         startingLocation[0] += nextButton.getWidth() / 2;
-        FilterActivity.startFilterFromLocation(startingLocation, HandleActivity.this, imageUri.toString());
+        FilterActivity.startFilterFromLocation(startingLocation, FusionActivity.this, imageUri.toString());
         this.overridePendingTransition(0, 0);
     }
 
@@ -416,12 +415,6 @@ public class HandleActivity extends AppCompatActivity  {
         rs.destroy();
 
         return outBitmap;
-
-
     }
-
-
-
-
 
 }

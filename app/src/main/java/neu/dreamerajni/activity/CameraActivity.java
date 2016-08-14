@@ -325,7 +325,8 @@ public class CameraActivity extends AppCompatActivity implements
 
             //跳转到下一个Activity
             Intent intent = new Intent();
-            intent.setClass(CameraActivity.this, HandleActivity.class);
+            intent.setClass(CameraActivity.this, FusionActivity.class);
+//            intent.setClass(CameraActivity.this, EraseActivity.class);
             intent.putExtra("id", pictureID);
             float[] matrixValues = new float[9];
             lastMatrix.getValues(matrixValues);

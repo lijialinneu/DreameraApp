@@ -17,4 +17,6 @@
     <string name="adjustAlpha">透明度：</string>
     <string name="adjustRange">模糊域：</string>
 
+    <string name="old_map_list">选择老照片：</string>
+
 </resources>

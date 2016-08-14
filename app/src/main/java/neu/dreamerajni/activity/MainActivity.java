@@ -2,6 +2,7 @@ package neu.dreamerajni.activity;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -10,15 +11,19 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 
 import com.baidu.mapapi.SDKInitializer;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import neu.dreamerajni.R;
 import neu.dreamerajni.utils.APPUtils;
 import neu.dreamerajni.utils.BMapControlUtil;
+import neu.dreamerajni.view.OldMapPopupView;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -29,8 +34,13 @@ public class MainActivity extends AppCompatActivity
     @Nullable
     @Bind(R.id.ivLogo)
     ImageView ivLogo;
+    @Bind(R.id.btnOldMap)
+    FloatingActionButton btnOldMap;
+    @Bind(R.id.old_map_layout)
+    LinearLayout oldMapLayout;
 
     private BMapControlUtil bMapControlUtil = null;
+    private OldMapPopupView oldMapPopupView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -126,6 +136,13 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
+    @OnClick(R.id.btnOldMap)
+    public void setOldMap() {
+        oldMapLayout.setVisibility(View.VISIBLE);
+        oldMapPopupView = new OldMapPopupView(this, bMapControlUtil);
+
+    }
+
 
 
     @Override
@@ -184,4 +201,6 @@ public class MainActivity extends AppCompatActivity
             bMapControlUtil.myOrientationListener.stop();
         }
     }
+
+
 }

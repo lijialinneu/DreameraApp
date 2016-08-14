@@ -9,6 +9,9 @@
 
     <!-- add on 2016-06-06 by 10405 -->
     <dimen name="camera_margin_bottom">16dp</dimen>
+    <dimen name="btnOldMap_margin_left">50dp</dimen>
+    <dimen name="btnOldMap_margin_bottom">50dp</dimen>
+    <dimen name="oldMapList_margin_bottom">150dp</dimen>
 
     <!-- add on 2016-06-10 by 10405 -->
     <dimen name="marker_text_size">16dp</dimen>

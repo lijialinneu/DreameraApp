@@ -14,6 +14,8 @@ import com.baidu.mapapi.map.BaiduMap.OnMapLoadedCallback;
 import com.baidu.mapapi.map.BaiduMap.OnMarkerClickListener;
 import com.baidu.mapapi.map.BitmapDescriptor;
 import com.baidu.mapapi.map.BitmapDescriptorFactory;
+import com.baidu.mapapi.map.GroundOverlay;
+import com.baidu.mapapi.map.GroundOverlayOptions;
 import com.baidu.mapapi.map.MapStatus;
 import com.baidu.mapapi.map.MapStatusUpdate;
 import com.baidu.mapapi.map.MapStatusUpdateFactory;
@@ -23,6 +25,7 @@ import com.baidu.mapapi.map.MarkerOptions;
 import com.baidu.mapapi.map.MyLocationConfiguration;
 import com.baidu.mapapi.map.MyLocationConfiguration.LocationMode;
 import com.baidu.mapapi.map.MyLocationData;
+import com.baidu.mapapi.map.Overlay;
 import com.baidu.mapapi.map.OverlayOptions;
 import com.baidu.mapapi.map.TextOptions;
 import com.baidu.mapapi.model.LatLng;
@@ -47,20 +50,32 @@ public class BMapControlUtil {
 
     @Bind(R.id.id_bmapView)
     public MapView mapView;     //绑定地图控件
-    
+
     public Activity activity;   //调用BmMap控件的Activity
     public BaiduMap baiduMap;   //地图实例
     private MarkerPopupWindowView markerPopupWindowView;     //底部弹窗
     public static RelativeLayout map;                        //地图的容器
     private boolean isFristLocation = true;                  //第一次定位
     public MyLocationListener mMyLocationListener;           //监听器
-    public LocationMode mCurrentMode = LocationMode.NORMAL; //定位模式
-    public LocationClient mLocationClient;                  //客户端
-    private int mXDirection;                                //方向传感器X方向的值
-    private double mCurrentLantitude;                       //经度
-    private double mCurrentLongitude;                       //纬度
-    private float mCurrentAccracy;                          //精度
-    public MyOrientationListener myOrientationListener;     //方向传感器的监听器
+    public LocationMode mCurrentMode = LocationMode.NORMAL;  //定位模式
+    public LocationClient mLocationClient;                   //客户端
+    private int mXDirection;                                 //方向传感器X方向的值
+    private double mCurrentLantitude;                        //经度
+    private double mCurrentLongitude;                        //纬度
+    private float mCurrentAccracy;                           //精度
+    public MyOrientationListener myOrientationListener;      //方向传感器的监听器
+
+    /**
+     * 以下与老地图相关
+     */
+    public GroundOverlay oldMapOverlay;
+    private LatLng southwest;
+    private LatLng northeast;
+    private LatLngBounds bounds;
+    public BitmapDescriptor bdGround;
+    public OverlayOptions ooGround;
+
+
 
     /**
      * 构造函数
@@ -76,17 +91,12 @@ public class BMapControlUtil {
      * 初始化地图
      */
     public void initBMap(){
-//        isFristLocation = true; // 第一次定位
         initMyLocation();       // 初始化定位
         initOritationListener();// 初始化方向传感器
 
         markerPopupWindowView = new MarkerPopupWindowView(activity);
         map = (RelativeLayout) activity.findViewById(R.id.id_map);
         baiduMap = mapView.getMap();
-//        LatLng latLng = new LatLng(41.802273,123.417315);//将地图移至沈阳市
-//        MapStatusUpdate u = MapStatusUpdateFactory.newLatLng(latLng);
-//        baiduMap.animateMapStatus(u);
-
         baiduMap.setOnMapLoadedCallback(callBackHandler);
         baiduMap.setOnMarkerClickListener(markerClickHandler);
 
@@ -282,4 +292,53 @@ public class BMapControlUtil {
             marker.setExtraInfo(bundle);
         }
     }
+
+
+    /**
+     *  显示老地图
+     *  一个没啥大用的功能
+     */
+    public void addOldMapOverlay(int progress) {
+
+        if(oldMapOverlay != null) {
+            oldMapOverlay.remove();
+            bdGround.recycle();
+            bdGround = null;
+            oldMapOverlay = null;
+            System.gc();
+        }
+
+
+        //定义Ground的显示地理范围
+        southwest = new LatLng(41.807449,123.400122);
+        northeast = new LatLng(41.755163,123.489881);
+        bounds = new LatLngBounds.Builder()
+                .include(northeast)
+                .include(southwest)
+                .build();
+
+        //定义Ground显示的图片
+        if(progress == 0) {
+            bdGround = BitmapDescriptorFactory.fromResource(R.mipmap.map1);
+
+
+        } else if(progress == 1) {
+            bdGround = BitmapDescriptorFactory.fromResource(R.mipmap.map2);
+        } else if(progress == 2) {
+            bdGround = BitmapDescriptorFactory.fromResource(R.mipmap.map3);
+        } else if(progress == 3) {
+            bdGround = BitmapDescriptorFactory.fromResource(R.mipmap.map4);
+        } else {
+            bdGround = BitmapDescriptorFactory.fromResource(R.mipmap.map5);
+        }
+
+        //定义Ground覆盖物选项
+        ooGround = new GroundOverlayOptions()
+                .positionFromBounds(bounds)
+                .image(bdGround);
+
+        //在地图中添加Ground覆盖物
+        oldMapOverlay = (GroundOverlay)  baiduMap.addOverlay(ooGround);
+    }
+
 }

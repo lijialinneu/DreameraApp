@@ -36,20 +36,6 @@ public class PhotoListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 //        itemsCount = calculateCount();
     }
 
-    // 计算数量，排除那些没有图片的点
-    // 修改服务器上的程序，在服务器端发送数据前过滤
-    // 过滤一张图片都没有的点
-    // 如果某点的图片为空，则过滤改图片
-//    public int calculateCount() {
-//        int count = 0;
-//        for(int i = 0; i < picList.size(); i++) {
-//            pictureUrl = picList.get(i).get("url").toString();
-//            if(pictureUrl != "null") {
-//                count ++;
-//            }
-//        }
-//        return count;
-//    }
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -70,7 +56,7 @@ public class PhotoListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             holder.imgView.setTag(position);  //设置tag
             holder.selectImgView.setImageResource(R.mipmap.ic_selected); //设置选中的对号图片
             holder.selectImgView.setTag(position + "a");
-            holder.imgView.setOnClickListener(new MyImgClickListener(pictureId, pictureUrl));
+            holder.imgView.setOnClickListener(new MyImgClickListener(pictureId));
 
             asyncGetPicTask = new AsyncGetPicTask(holder.imgView, pictureUrl, pictureId);
             asyncGetPicTask.execute();
