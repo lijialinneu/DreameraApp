@@ -11,11 +11,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.SubMenu;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import com.baidu.mapapi.SDKInitializer;
+
+import java.lang.reflect.Method;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -34,8 +37,8 @@ public class MainActivity extends AppCompatActivity
     @Nullable
     @Bind(R.id.ivLogo)
     ImageView ivLogo;
-    @Bind(R.id.btnOldMap)
-    FloatingActionButton btnOldMap;
+//    @Bind(R.id.btnOldMap)
+//    FloatingActionButton btnOldMap;
     @Bind(R.id.old_map_layout)
     LinearLayout oldMapLayout;
 
@@ -63,6 +66,7 @@ public class MainActivity extends AppCompatActivity
 
         //调用BMap控件
         bMapControlUtil = new BMapControlUtil(this);
+
     }
 
     public void startIntroAnimation() {
@@ -92,8 +96,25 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
+        setIconsVisible(menu, true);
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
+    }
+
+    private void setIconsVisible(Menu menu, boolean flag) {
+        //判断menu是否为空
+        if(menu != null) {
+            try {
+                //如果不为空,就反射拿到menu的setOptionalIconsVisible方法
+                Method method = menu.getClass().getDeclaredMethod("setOptionalIconsVisible", Boolean.TYPE);
+                //暴力访问该方法
+                method.setAccessible(true);
+                //调用该方法显示icon
+                method.invoke(menu, flag);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     @Override
@@ -104,8 +125,14 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+//        if (id == R.id.action_settings) {
+//            return true;
+//        }
+        if (id == R.id.action_map) {
+            setOldMap();
             return true;
+        } else if(id == R.id.action_clear_map) {
+            clearOldMap();
         }
 
         return super.onOptionsItemSelected(item);
@@ -136,12 +163,27 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-    @OnClick(R.id.btnOldMap)
     public void setOldMap() {
         oldMapLayout.setVisibility(View.VISIBLE);
         oldMapPopupView = new OldMapPopupView(this, bMapControlUtil);
-
     }
+
+    public void clearOldMap() {
+        if(bMapControlUtil.oldMapOverlay != null) {
+            bMapControlUtil.oldMapOverlay.remove();
+            bMapControlUtil.bdGround.recycle();
+            bMapControlUtil.bdGround = null;
+            bMapControlUtil.oldMapOverlay = null;
+            System.gc();
+        }
+    }
+
+//    @OnClick(R.id.btnOldMap)
+//    public void setOldMap() {
+//        oldMapLayout.setVisibility(View.VISIBLE);
+//        oldMapPopupView = new OldMapPopupView(this, bMapControlUtil);
+//
+//    }
 
 
 

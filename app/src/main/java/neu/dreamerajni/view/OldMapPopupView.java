@@ -63,7 +63,7 @@ public class OldMapPopupView extends View {
             int i =  (int) v.getTag(); // 显示对号小图标
             flagView = (ImageView) gallery.findViewWithTag(i + "a");
             flagView.setVisibility(VISIBLE);
-            seekBar.setVisibility(VISIBLE);
+//            seekBar.setVisibility(VISIBLE);
 
             bMapControlUtil.addOldMapOverlay(i);
 
@@ -71,7 +71,9 @@ public class OldMapPopupView extends View {
                 @Override
                 public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                     alpha = 100 - progress;
-                    bMapControlUtil.oldMapOverlay.setTransparency(alpha / 100);
+                    if(bMapControlUtil.oldMapOverlay != null) {
+                        bMapControlUtil.oldMapOverlay.setTransparency(alpha / 100);
+                    }
                 }
 
                 @Override
@@ -103,15 +105,15 @@ public class OldMapPopupView extends View {
         linearLayout.setVisibility(GONE);
     }
 
-    @OnClick(R.id.btnClearOldMap)
-    public void clearOldMap() {
-        if(bMapControlUtil.oldMapOverlay != null) {
-            bMapControlUtil.oldMapOverlay.remove();
-            bMapControlUtil.bdGround.recycle();
-            bMapControlUtil.bdGround = null;
-            bMapControlUtil.oldMapOverlay = null;
-            System.gc();
-        }
-    }
+//    @OnClick(R.id.btnClearOldMap)
+//    public void clearOldMap() {
+//        if(bMapControlUtil.oldMapOverlay != null) {
+//            bMapControlUtil.oldMapOverlay.remove();
+//            bMapControlUtil.bdGround.recycle();
+//            bMapControlUtil.bdGround = null;
+//            bMapControlUtil.oldMapOverlay = null;
+//            System.gc();
+//        }
+//    }
 
 }

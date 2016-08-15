@@ -5,36 +5,24 @@
     android:visibility="gone"
     android:background="@mipmap/ic_bg"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_marginBottom="0dp">
+    android:layout_height="wrap_content">
 
-    <SeekBar
-        android:visibility="gone"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/id_map_alpha"
-        android:max="100"
-        android:maxHeight="5dp"
-        android:layout_gravity="center"
-        android:progressDrawable="@drawable/po_seekbar"
-        android:progress="0" />
+        android:orientation="horizontal"
+        android:id="@+id/id_name_line">
 
-    <RelativeLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/id_name_line"
-        android:layout_alignTop="@+id/id_scroll">
-
-
-        <!-- 名字 -->
-        <TextView
-            android:id="@+id/id_select_oldmap"
-            android:layout_width="wrap_content"
+        <SeekBar
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="@dimen/marker_text_size"
-            android:layout_margin="@dimen/marker_name_margin"
-            android:text="@string/old_map_list"
-            android:textColor="@color/colorBanner" />
+            android:id="@+id/id_map_alpha"
+            android:max="100"
+            android:maxHeight="5dp"
+            android:layout_gravity="center"
+            android:progressDrawable="@drawable/po_seekbar"
+            android:progress="0"
+            android:layout_weight="9"/>
 
         <!-- 关闭 button-->
         <ImageButton
@@ -43,9 +31,10 @@
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
             android:layout_alignParentRight="true"
+            android:layout_weight="1"
             android:background="@android:drawable/ic_menu_close_clear_cancel" />
 
-    </RelativeLayout>
+    </LinearLayout>
 
 
     <android.support.v7.widget.RecyclerView

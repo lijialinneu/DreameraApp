@@ -23,6 +23,7 @@ public class WelcomePageActivity extends AppCompatActivity {
             public void run(){
                 Intent intent = new Intent();
                 intent.setClass(WelcomePageActivity.this, MainActivity.class);
+//                intent.setClass(WelcomePageActivity.this, CityActivity.class);
                 WelcomePageActivity.this.startActivity(intent);
                 finish();
             }

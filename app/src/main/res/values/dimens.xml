@@ -14,7 +14,7 @@
     <dimen name="oldMapList_margin_bottom">150dp</dimen>
 
     <!-- add on 2016-06-10 by 10405 -->
-    <dimen name="marker_text_size">16dp</dimen>
+    <dimen name="marker_text_size">16sp</dimen>
     <dimen name="marker_name_margin">4dp</dimen>
     <dimen name="marker_title_marginBottom">54dp</dimen>
     <dimen name="action_bar_height">54dp</dimen>

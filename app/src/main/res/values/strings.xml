@@ -8,15 +8,18 @@
     <string name="action_settings">Settings</string>
 
     <!--add on 2016-06-06 by 10405-->
-    <string name="welcome">城市时光摄影</string>
+    <string name="welcome">Dreamera</string>
 
     <!--add on 2016-06-07 by 10405-->
-    <string name="no_net">网络连接断开</string>
+    <string name="no_net">No network</string>
     <string name="title_activity_camera">CameraActivity</string>
 
-    <string name="adjustAlpha">透明度：</string>
-    <string name="adjustRange">模糊域：</string>
+    <string name="adjustAlpha">Alpha</string>
+    <string name="adjustRange">Region</string>
 
-    <string name="old_map_list">选择老照片：</string>
+    <string name="old_map_list">Old Map List</string>
+
+    <string name="action_map">Show Old Map</string>
+    <string name="action_clear_map">Clear Old Map</string>
 
 </resources>

@@ -47,7 +47,6 @@ import neu.dreamerajni.utils.ImgToolKits;
 import neu.dreamerajni.utils.ZoomListener;
 import neu.dreamerajni.view.RevealBackgroundView;
 
-import static android.view.WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS;
 import static android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE;
 
 
@@ -212,16 +211,12 @@ public class CameraActivity extends AppCompatActivity implements
         wm = (WindowManager) this.getSystemService(Context.WINDOW_SERVICE);
 
         borderBitmap = ImgToolKits.initBorderPic(
-                picFromFile,
-                wm.getDefaultDisplay().getWidth(),
-                wm.getDefaultDisplay().getWidth(),
-                true
-        );
+                picFromFile, wm.getDefaultDisplay().getWidth(), wm.getDefaultDisplay().getWidth(),
+                true);
 
         surfaceView = new SurfaceView(this);
         surfaceHolder = surfaceView.getHolder();
         surfaceView.setBackground(new BitmapDrawable(borderBitmap));
-
         surfaceView.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View v, int keyCode, KeyEvent event) {
@@ -232,7 +227,6 @@ public class CameraActivity extends AppCompatActivity implements
                 return false;
             }
         });
-
         wmParams = new WindowManager.LayoutParams();
         wmParams.width = borderBitmap.getWidth();
         wmParams.height = borderBitmap.getHeight();
@@ -243,6 +237,7 @@ public class CameraActivity extends AppCompatActivity implements
         }
         wm.addView(surfaceView, wmParams);
 
+        cameraView.autoFocus();
         cameraView.setOnTouchListener(new ZoomListener(this, borderBitmap) { //触摸监听
             @Override
             public void zoom(Matrix matrix) {
@@ -326,7 +321,6 @@ public class CameraActivity extends AppCompatActivity implements
             //跳转到下一个Activity
             Intent intent = new Intent();
             intent.setClass(CameraActivity.this, FusionActivity.class);
-//            intent.setClass(CameraActivity.this, EraseActivity.class);
             intent.putExtra("id", pictureID);
             float[] matrixValues = new float[9];
             lastMatrix.getValues(matrixValues);

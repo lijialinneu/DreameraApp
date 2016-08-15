@@ -19,36 +19,12 @@
             android:layout_height="wrap_content"
             android:clickable="true"/>
 
-        <!-- 显示老地图Button -->
-        <android.support.design.widget.FloatingActionButton
-            android:id="@+id/btnOldMap"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentBottom="true"
-            android:layout_marginStart="@dimen/btnOldMap_margin_left"
-            android:layout_marginLeft="@dimen/btnOldMap_margin_left"
-            android:src="@android:drawable/ic_dialog_map" />
-
-
-        <!-- 老地图层 -->
         <include layout="@layout/oldmap_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_above="@+id/btnOldMap"
+            android:layout_alignParentBottom="true"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true" />
-
-        <!--关闭老地图Button -->
-        <android.support.design.widget.FloatingActionButton
-            android:id="@+id/btnClearOldMap"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@android:drawable/ic_menu_close_clear_cancel"
-            android:layout_alignParentBottom="true"
-            android:layout_toRightOf="@+id/btnOldMap"
-            android:layout_toEndOf="@+id/btnOldMap" />
 
     </RelativeLayout>
 
