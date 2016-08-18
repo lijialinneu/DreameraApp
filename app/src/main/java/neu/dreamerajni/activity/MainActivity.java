@@ -112,8 +112,8 @@ public class MainActivity extends AppCompatActivity
                 //调用该方法显示icon
                 method.invoke(menu, flag);
             } catch (Exception e) {
-                e.printStackTrace();
-            }
+            e.printStackTrace();
+        }
         }
     }
 
