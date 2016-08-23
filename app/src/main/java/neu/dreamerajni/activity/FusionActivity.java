@@ -8,6 +8,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.PointF;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Build;
@@ -59,7 +60,7 @@ public class FusionActivity extends AppCompatActivity  {
 
     private WindowManager wm;
     private WindowManager.LayoutParams wmParams; //屏幕参数
-    private String id;   //图片的id
+    private String id;                           //图片的id
     private Matrix matrix = new Matrix();        //前一个Activity传回的矩阵参数
     private float[] matrixValues = new float[9]; //用于获取矩阵的参数
     private Bitmap photoBitmap;         //拍摄的照片
@@ -87,6 +88,13 @@ public class FusionActivity extends AppCompatActivity  {
     private int[] picPixels;            //用于存储copyPicFromFile像素值得矩阵
     private int[] maskPixels;           //用于存储maskBitmap像素值得矩阵
 
+//    private double rotation = 0;
+//    private PointF mid = new PointF();
+//    private float tx = 0;
+//    private float ty = 0;
+//    private double aa;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -98,31 +106,34 @@ public class FusionActivity extends AppCompatActivity  {
         id = bundle.getString("id");           //获取新拍摄的照片的id
         matrixValues = bundle.getFloatArray("matrix");
         matrix.setValues(matrixValues);
+
+//        mid.x = bundle.getFloat("midx");
+//        mid.y = bundle.getFloat("midy");
+//
+//        System.out.println("asdf midx " + mid.x);
+//        System.out.println("asdf midy " + mid.y);
+//        for(int i = 0;i < matrixValues.length; i++) {
+//            System.out.println("asdf " + matrixValues[i]);
+//        }
+//
+//        aa = Math.cos(Math.asin(matrixValues[1]));
+//        System.out.println("asdf aa " + aa);
+//
+//        tx = (float)(-mid.x * aa + mid.y * matrixValues[1] + mid.x);
+//        ty = (float)(-mid.x * matrixValues[1] - mid.y * aa + mid.y);
+//
+//        System.out.println("asdf tx " + tx);
+//        System.out.println("asdf ty " + ty);
+
         wm = (WindowManager) this.getSystemService(Context.WINDOW_SERVICE);
         screenWidth = wm.getDefaultDisplay().getWidth(); //屏幕的宽度1080
         addX = ImgToolKits.addHeight * matrixValues[Matrix.MSCALE_X];
         addY = ImgToolKits.addHeight * matrixValues[Matrix.MSCALE_Y];
 
-        initPhoto();       //初始化拍摄照片
-        initOldPicture();  //初始化老照片
-
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        adjustAlpha(); //初始化滑块,调整老照片的alpha值
-        adjustBlur();  //调整模糊范围
-    }
-
-    /**
-     * 初始化拍摄照片
-     * @author 10405
-     */
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
-    public void initPhoto() {
         photoBitmap = AsyncGetDataUtil.getPhotoFromFile(); //取出拍摄的图片;
         photoView.setBackground(new BitmapDrawable(photoBitmap));
+        initOldPicture();  //初始化老照片
+
     }
 
 
@@ -146,15 +157,18 @@ public class FusionActivity extends AppCompatActivity  {
 
         copyPicFromFile = ImgToolKits.changeBitmapSize(picFromFile,
                 borderWidth - 2 * addX * type, borderHeight - 2 * addY * (1 - type));
+
         w = copyPicFromFile.getWidth();
         h = copyPicFromFile.getHeight();
-        float[] matrixValues = new float[9];    //读取变换矩阵
-        matrix.getValues(matrixValues);
+
         xTrans = matrixValues[Matrix.MTRANS_X]; //x位移值
         yTrans = matrixValues[Matrix.MTRANS_Y]; //y位移值
 
+//        left = (int) (xTrans * matrixValues[0] - ty);
+//        top = (int) ((yTrans * matrixValues[0] + photoView.getTop() - tx));
+
         left = (int) xTrans;
-        top = (int) (yTrans + photoView.getTop());
+        top = (int)(yTrans + photoView.getTop());
 
         oldPictureView = new SurfaceView(this);
         oldPictureView.setBackground(new BitmapDrawable(copyPicFromFile));
@@ -175,10 +189,8 @@ public class FusionActivity extends AppCompatActivity  {
         wmParams = new WindowManager.LayoutParams();
         wmParams.x = (int)(left - leftw + type * addX);
         wmParams.y = (int)(top - topw + (1 - type) * addY);
-
         xOffset = wmParams.x + leftw;
         yOffset = wmParams.y + topw;
-
         wmParams.width = copyPicFromFile.getWidth();
         wmParams.height = copyPicFromFile.getHeight();
         wmParams.flags = FLAG_NOT_TOUCHABLE | FLAG_LAYOUT_NO_LIMITS;
@@ -209,8 +221,6 @@ public class FusionActivity extends AppCompatActivity  {
         copyPicFromFile.getPixels(picPixels, 0, w, 0, 0, w, h);
         maskBitmap.getPixels(maskPixels, 0, w, 0, 0, w, h);
 
-
-
         composite();
     }
 
@@ -218,12 +228,10 @@ public class FusionActivity extends AppCompatActivity  {
      * 老照片与mask的融合
      */
     public void composite() {
-        int x, y, px, py;
+        int y, py;
         for(int i = 0; i < maskPixels.length; i++) {
             y = i / w;
-//            x = i - (y - 1) * w;
             py = yOffset + y + photoView.getTop();
-//            px = xOffset + x;
             if(py <= photoView.getTop() || py >= photoView.getTop() + screenWidth) {
                 picPixels[i] = 0;
             }else {
@@ -245,9 +253,22 @@ public class FusionActivity extends AppCompatActivity  {
 
         //生成前置图片添加蒙板后的bitmap:resultBitmap
         resultBitmap.setPixels(picPixels, 0, w, 0, 0, w, h);
+
+//        matrixValues[2] = matrixValues[5] = 0;
+//        matrix.setValues(matrixValues);
+//        resultBitmap = Bitmap.createBitmap(resultBitmap, 0,0,
+//                resultBitmap.getWidth(), resultBitmap.getHeight(), matrix, true);
+
         oldPictureView.setBackground(new BitmapDrawable(resultBitmap));
+
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        adjustAlpha(); //初始化滑块,调整老照片的alpha值
+        adjustBlur();  //调整模糊范围
+    }
 
     @Override
     protected void onDestroy() {
@@ -345,7 +366,6 @@ public class FusionActivity extends AppCompatActivity  {
                  /* 产生reSize后的Bitmap对象 */
                 Matrix matrix = new Matrix();
                 matrix.postScale(scale, scale);
-//                Bitmap presentBitmap = ((BitmapDrawable) oldPictureView.getBackground()).getBitmap();
                 Bitmap smallMask = Bitmap.createBitmap(
                         maskBitmap,0,0,maskBitmap.getWidth(),
                         maskBitmap.getHeight(), matrix, true);
@@ -363,10 +383,6 @@ public class FusionActivity extends AppCompatActivity  {
                 bigMask.getPixels(maskPixels, 0, w, 0, 0, w, h);
                 composite();
                 oldPictureView.getBackground().setAlpha(alpha); //别忘了设置透明度
-//                presentBitmap.recycle();
-//                smallMask.recycle();
-//                blurMask.recycle();
-//                bigMask.recycle();
             }
 
             @Override
@@ -385,33 +401,20 @@ public class FusionActivity extends AppCompatActivity  {
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     public Bitmap blurBitmap(Bitmap bitmap, float radius){
 
-        //Let's create an empty bitmap with the same size of the bitmap we want to blur
-        Bitmap outBitmap = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
-
-        //Instantiate a new Renderscript
+        Bitmap outBitmap = Bitmap.createBitmap(
+                bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
         RenderScript rs = RenderScript.create(getApplicationContext());
-
-        //Create an Intrinsic Blur Script using the Renderscript
         ScriptIntrinsicBlur blurScript = ScriptIntrinsicBlur.create(rs, Element.U8_4(rs));
 
-        //Create the Allocations (in/out) with the Renderscript and the in/out bitmaps
         Allocation allIn = Allocation.createFromBitmap(rs, bitmap);
         Allocation allOut = Allocation.createFromBitmap(rs, outBitmap);
 
-        //Set the radius of the blur
         blurScript.setRadius(radius);
-
-        //Perform the Renderscript
         blurScript.setInput(allIn);
         blurScript.forEach(allOut);
 
-        //Copy the final bitmap created by the out Allocation to the outBitmap
         allOut.copyTo(outBitmap);
-
-        //recycle the original bitmap
 //        bitmap.recycle();
-
-        //After finishing everything, we destroy the Renderscript.
         rs.destroy();
 
         return outBitmap;

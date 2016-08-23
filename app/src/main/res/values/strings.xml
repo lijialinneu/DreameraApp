@@ -14,7 +14,7 @@
     <string name="no_net">No network</string>
     <string name="title_activity_camera">CameraActivity</string>
 
-    <string name="adjustAlpha">Alpha</string>
+    <string name="adjustAlpha">Alpha&#160;&#160;</string>
     <string name="adjustRange">Region</string>
 
     <string name="old_map_list">Old Map List</string>

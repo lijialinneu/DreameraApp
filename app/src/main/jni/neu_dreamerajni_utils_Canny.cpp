@@ -1,12 +1,18 @@
 //
 // Created by 10405 on 2016/7/2.
 //
-
+//
 #include "neu_dreamerajni_utils_OpenCVCanny.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <opencv2/opencv.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
+#include <android/log.h>
+
+#define LOG_TAG    "asdf"
+#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
+#define LOGI(...)  __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
+#define LOGD(...)  __android_log_print(ANDROID_LOG_DEBUG,LOG_TAG,__VA_ARGS__) // 定义LOGD类型
 
 using namespace cv;
 
@@ -34,6 +40,8 @@ JNIEXPORT jintArray JNICALL Java_neu_dreamerajni_utils_OpenCVCanny_canny
 
     cvCanny(image3channel, pCannyImage, 50, 150, 3);
 
+    LOGD("asdf %d %d", pCannyImage->depth, pCannyImage->width);
+
     int* outImage = new int[w * h];
     for(int i = 0;i < w * h; i++)
     {
@@ -41,10 +49,14 @@ JNIEXPORT jintArray JNICALL Java_neu_dreamerajni_utils_OpenCVCanny_canny
     }
 
     int size = w * h;
+    LOGD("asdf %d ", size);
+
+
     jintArray result = env->NewIntArray(size);
     env->SetIntArrayRegion(result, 0, size, outImage);
     env->ReleaseIntArrayElements(buf, cbuf, 0);
     return result;
+
 
 }
 

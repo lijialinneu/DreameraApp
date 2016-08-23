@@ -9,11 +9,14 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
+import android.graphics.Paint;
 import android.graphics.PixelFormat;
+import android.graphics.PointF;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.hardware.Camera;
+import android.media.Image;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -26,6 +29,7 @@ import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.ImageView;
 
 import com.commonsware.cwac.camera.CameraHost;
 import com.commonsware.cwac.camera.CameraHostProvider;
@@ -64,6 +68,8 @@ public class CameraActivity extends AppCompatActivity implements
     CameraView cameraView;
     @Bind(R.id.btnTakePhoto)
     Button btnTakePhoto;
+//    @Bind(R.id.guide_view)
+//    ImageView guideView;
 
     private String pictureID;            //从上一个Activity传递过来的图片的ID
     private SurfaceView surfaceView;     //surfaceView用于绘制边缘图
@@ -75,6 +81,8 @@ public class CameraActivity extends AppCompatActivity implements
     private WindowManager.LayoutParams wmParams;
     private Matrix lastMatrix = new Matrix();  //初始化变换矩阵
     private  Canvas canvas;
+//    private boolean guideLineOpen = true;
+//    private ImageView guideView;
 
     /**
      * 一个静态函数，用于处理activity之间的参数传递
@@ -227,6 +235,7 @@ public class CameraActivity extends AppCompatActivity implements
                 return false;
             }
         });
+
         wmParams = new WindowManager.LayoutParams();
         wmParams.width = borderBitmap.getWidth();
         wmParams.height = borderBitmap.getHeight();
@@ -239,6 +248,7 @@ public class CameraActivity extends AppCompatActivity implements
 
         cameraView.autoFocus();
         cameraView.setOnTouchListener(new ZoomListener(this, borderBitmap) { //触摸监听
+
             @Override
             public void zoom(Matrix matrix) {
                 surfaceView.setBackgroundResource(0); //删除背景
@@ -250,6 +260,7 @@ public class CameraActivity extends AppCompatActivity implements
                 surfaceHolder.setFormat(PixelFormat.TRANSPARENT); //设置背景透明
                 surfaceHolder.lockCanvas(new Rect(0, 0, 0, 0));
                 surfaceHolder.unlockCanvasAndPost(canvas);
+                canvas.save();
 
                 lastMatrix.set(matrix);
             }
@@ -322,12 +333,31 @@ public class CameraActivity extends AppCompatActivity implements
             Intent intent = new Intent();
             intent.setClass(CameraActivity.this, FusionActivity.class);
             intent.putExtra("id", pictureID);
+
+//            intent.putExtra("midx", ZoomListener.mid.x);
+//            intent.putExtra("midy", ZoomListener.mid.y);
+
             float[] matrixValues = new float[9];
             lastMatrix.getValues(matrixValues);
             intent.putExtra("matrix", matrixValues); //传递矩阵
             CameraActivity.this.startActivity(intent);
 
         }
+    }
+
+
+    /**
+     * 绘制辅助线
+     */
+    @OnClick(R.id.guide_line)
+    public void drawGuideLine() {
+//        if(guideLineOpen) {
+//            guideView.setVisibility(View.GONE);
+//            guideLineOpen = false;
+//        } else {
+//           guideView.setVisibility(View.VISIBLE);
+//            guideLineOpen = true;
+//        }
     }
 
 }
