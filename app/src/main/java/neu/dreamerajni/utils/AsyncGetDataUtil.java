@@ -25,15 +25,13 @@ import java.util.Map;
 
 public class AsyncGetDataUtil {
 
-    public static String jsonString;           //JSON字符串
+    private static String jsonString;           //JSON字符串
     public static Bitmap bitmap;               //图片资源
-    public static boolean jsonUpdate = false;  //json是否更新
 
     /**
      * 获取缓存的JSON数据
-     * @author 10405
      */
-    public static void getJSONData(){
+    static void getJSONData(){
         FileCacheUtil fileCacheUtil = new FileCacheUtil(FileCacheUtil.JSONPATH);
         String filename = null;
         try {
@@ -48,7 +46,6 @@ public class AsyncGetDataUtil {
                 if (overTime(filename)){
                     getDataFromServer();//先从服务器下载数据
                     FileCacheUtil.cleanJSONCache();//清除原有JSON缓存
-                    jsonUpdate = true;
                 }
             }catch (Exception e) {
                 e.printStackTrace();
@@ -58,15 +55,12 @@ public class AsyncGetDataUtil {
 
     /**
      * 从文件中读JSON数据
-     * @author 10405
      */
-    public static String getJSONFromFile(){
+    static String getJSONFromFile(){
         //TODO 数据量大的情况下需要分段加载缓存文件中的数据
         try {
             jsonString = FileCacheUtil.getJsonFromFile(FileCacheUtil.JSONPATH);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ParseException e) {
+        } catch (IOException | ParseException e) {
             e.printStackTrace();
         }
         return jsonString;
@@ -74,9 +68,8 @@ public class AsyncGetDataUtil {
 
     /**
      * 从服务器端Get JSON数据
-     * @author 10405
      */
-    public static void getDataFromServer(){
+    private static void getDataFromServer(){
         //开启一个新线程，从服务器端下载JSON数据
         new Thread(){
             public void run(){
@@ -102,11 +95,10 @@ public class AsyncGetDataUtil {
 
     /**
      * 解析JSON数据，picture部分不解析
-     * @author 10405
      * @param jsonStr
      * @return  ArrayList<HashMap<String, Object>>
      */
-    public static ArrayList<HashMap<String, Object>> decodeJsonToPoint(String jsonStr)
+     static ArrayList<HashMap<String, Object>> decodeJsonToPoint(String jsonStr)
             throws JSONException {
         ArrayList<HashMap<String, Object>> list = new ArrayList();
         JSONArray jsonArray = new JSONArray(jsonStr);
@@ -126,8 +118,7 @@ public class AsyncGetDataUtil {
 
     /**
      * 解析picture部分的JSON数据
-     * @author 10405
-     * @param jsonStr
+     * @param jsonStr 整个JSON字符串
      * @return  ArrayList<HashMap<String, Object>>
      */
     public static ArrayList<HashMap<String, Object>> decodeCrossPicturesJsonToPoint(String jsonStr)
@@ -150,7 +141,6 @@ public class AsyncGetDataUtil {
 
     /**
      * 获取缓存的图片数据
-     * @author 10405
      */
     public static void getPictureData(String id, String url){
         FileCacheUtil fileCacheUtil = new FileCacheUtil(FileCacheUtil.PICTUREPATH);
@@ -168,44 +158,34 @@ public class AsyncGetDataUtil {
 
     /**
      * 按id从文件中读图片
-     * @author 10405
      */
     public static Bitmap getPicFromFile(String picId){
         try {
             bitmap = FileCacheUtil.getPicFromFile(FileCacheUtil.PICTUREPATH, picId);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ParseException e) {
+        } catch (IOException | ParseException e) {
             e.printStackTrace();
         }
         return bitmap;
     }
 
-
     /**
      * 按路径从文件中读图片
-     * @author 10405
      */
     public static Bitmap getPhotoFromFile(){
         try {
             bitmap = FileCacheUtil.getPhotoFromFile(FileCacheUtil.CAMERAPATH);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ParseException e) {
+        } catch (IOException | ParseException e) {
             e.printStackTrace();
         }
         return bitmap;
     }
 
-
-
     /**
      * 判断超时的函数
-     * @author 10405
      * @param string 是一个包含时间的字符串
      * @return true or false
      */
-    public static boolean overTime(String string) throws ParseException{
+    private static boolean overTime(String string) throws ParseException{
         SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
         Date createDate = format.parse(string);
         Date presentDate = new Date();
@@ -213,18 +193,14 @@ public class AsyncGetDataUtil {
         long presentDay = presentDate.getTime();
         long oneDay = 86400000; //一天的毫秒数 24*3600*1000
         long oneHour = 3600000; //一小时
-        if(presentDay - createDay >= oneHour){ // 超过一小时就更新，用于测试阶段
-            return true;
-        }else{
-            return false;
-        }
+        // 超过一小时就更新，用于测试阶段
+        return presentDay - createDay >= oneHour;
     }
 
     /**
      * 从服务器端Get JSON数据
-     * @author 10405
      */
-    public static void getPicFromServer(final String url, final String id){
+    private static void getPicFromServer(final String url, final String id){
         //开启一个新线程，从服务器端下载图片
         new Thread(){
             public void run(){

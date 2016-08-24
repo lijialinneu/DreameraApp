@@ -14,11 +14,13 @@ import java.util.HashMap;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import neu.dreamerajni.R;
+import neu.dreamerajni.view.MarkerPopupWindowView;
 import neu.dreamerajni.view.MarkerPopupWindowView.AsyncGetPicTask;
 import neu.dreamerajni.view.MarkerPopupWindowView.MyImgClickListener;
 
 /**
  * Created by 10405 on 2016/7/26.
+ * Photo list adapter used in MarkerPopupWindowView
  */
 
 public class PhotoListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -26,14 +28,11 @@ public class PhotoListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     private Context context;
     private ArrayList<HashMap<String, Object>> picList;
     private int itemsCount;
-    private String pictureUrl, pictureId;
-    private AsyncGetPicTask asyncGetPicTask;
 
     public PhotoListAdapter(Context context, ArrayList<HashMap<String, Object>> picList) {
         this.context = context;
         this.picList = picList;
         itemsCount = picList.size();
-//        itemsCount = calculateCount();
     }
 
 
@@ -47,25 +46,20 @@ public class PhotoListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position) {
         PhotoListViewHolder holder = (PhotoListViewHolder) viewHolder;
 
-        pictureUrl = picList.get(position).get("url").toString();
+        String pictureUrl = picList.get(position).get("url").toString();
         if(pictureUrl != "null") {
-            pictureId = picList.get(position).get("id").toString();
+            String pictureId = picList.get(position).get("id").toString();
 
             holder.dateTextView.setText(picList.get(position).get("date").toString());
-            holder.imgView.setImageResource(R.mipmap.ic_nothing);//先都设置为默认图片，
-            holder.imgView.setTag(position);  //设置tag
+            holder.imgView.setImageResource(R.mipmap.ic_nothing);     //先都设置为默认图片，
+            holder.imgView.setTag(position);       //设置tag
             holder.selectImgView.setImageResource(R.mipmap.ic_selected); //设置选中的对号图片
             holder.selectImgView.setTag(position + "a");
             holder.imgView.setOnClickListener(new MyImgClickListener(pictureId));
 
-            asyncGetPicTask = new AsyncGetPicTask(holder.imgView, pictureUrl, pictureId);
+            AsyncGetPicTask asyncGetPicTask = new AsyncGetPicTask(holder.imgView, pictureUrl, pictureId);
             asyncGetPicTask.execute();
         }
-
-//        if(pictureUrl != "null"){
-//            asyncGetPicTask = new AsyncGetPicTask(holder.imgView, pictureUrl, pictureId);
-//            asyncGetPicTask.execute();
-//        }
     }
 
     @Override
@@ -82,7 +76,7 @@ public class PhotoListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         @Bind(R.id.id_date)
         TextView dateTextView;
 
-        public PhotoListViewHolder(View view) {
+        PhotoListViewHolder(View view) {
             super(view);
             ButterKnife.bind(this, view);
         }

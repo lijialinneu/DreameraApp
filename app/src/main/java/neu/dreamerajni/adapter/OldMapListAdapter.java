@@ -15,6 +15,7 @@ import neu.dreamerajni.view.OldMapPopupView;
 
 /**
  * Created by 10405 on 2016/8/14.
+ * Old map list adapter
  */
 
 public class OldMapListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -88,7 +89,7 @@ public class OldMapListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         @Bind(R.id.id_date)
         TextView dateTextView;
 
-        public OldMapListViewHolder(View view) {
+        OldMapListViewHolder(View view) {
             super(view);
             ButterKnife.bind(this, view);
         }

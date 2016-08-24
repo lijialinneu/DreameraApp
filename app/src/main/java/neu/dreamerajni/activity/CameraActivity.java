@@ -41,6 +41,7 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import neu.dreamerajni.R;
+import neu.dreamerajni.utils.APPUtils;
 import neu.dreamerajni.utils.AsyncGetDataUtil;
 import neu.dreamerajni.utils.FileCacheUtil;
 import neu.dreamerajni.utils.ImgToolKits;
@@ -68,7 +69,6 @@ public class CameraActivity extends AppCompatActivity implements
     private SurfaceHolder surfaceHolder;
     private int zoom = 0;                //相机焦距
     private Bitmap borderBitmap;         //边缘图
-    private WindowManager wm;
     private WindowManager.LayoutParams wmParams;
     private Matrix lastMatrix = new Matrix();  //初始化变换矩阵
     private  Canvas canvas;
@@ -92,6 +92,8 @@ public class CameraActivity extends AppCompatActivity implements
         setContentView(R.layout.activity_camera);
         ButterKnife.bind(this);
         setupRevealBackground(savedInstanceState);
+
+        APPUtils.getScreenWidth(this); //计算屏幕宽度
     }
 
     private void setupRevealBackground(Bundle savedInstanceState) {
@@ -130,7 +132,7 @@ public class CameraActivity extends AppCompatActivity implements
     protected void onDestroy() {
         super.onDestroy();
         //当activity 被destory时需要立即清除之前加载的view，否则会出现窗体泄露异常
-        wm.removeViewImmediate(surfaceView);
+        APPUtils.wm.removeViewImmediate(surfaceView);
     }
 
     @OnClick(R.id.btnTakePhoto)
@@ -188,43 +190,16 @@ public class CameraActivity extends AppCompatActivity implements
     /**
      * 添加轮廓图
      */
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     private void addBorderPicture() {
-
         Intent intent = getIntent();
         Bundle bundle = intent.getExtras();//从上一个Activity获取参数图片
         pictureID = bundle.getString("id");
         Bitmap picFromFile = AsyncGetDataUtil.getPicFromFile(pictureID);
 
-        wm = (WindowManager) this.getSystemService(Context.WINDOW_SERVICE);
+        borderBitmap = ImgToolKits.initBorderPic(picFromFile,
+               APPUtils.screenWidth , APPUtils.screenWidth, true);
 
-        borderBitmap = ImgToolKits.initBorderPic(
-                picFromFile, wm.getDefaultDisplay().getWidth(), wm.getDefaultDisplay().getWidth(),
-                true);
-
-        surfaceView = new SurfaceView(this);
-        surfaceHolder = surfaceView.getHolder();
-        surfaceView.setBackground(new BitmapDrawable(borderBitmap));
-        surfaceView.setOnKeyListener(new View.OnKeyListener() {
-            @Override
-            public boolean onKey(View v, int keyCode, KeyEvent event) {
-                switch (event.getKeyCode()) {
-                    case KeyEvent.KEYCODE_BACK:
-                        onCloseCamera();
-                }
-                return false;
-            }
-        });
-
-        wmParams = new WindowManager.LayoutParams();
-        wmParams.width = borderBitmap.getWidth();
-        wmParams.height = borderBitmap.getHeight();
-        wmParams.flags = FLAG_NOT_TOUCHABLE;
-        ViewGroup parent = (ViewGroup) surfaceView.getParent();
-        if (parent != null) {
-            parent.removeAllViews();
-        }
-        wm.addView(surfaceView, wmParams);
+        addSurfaceView();
 
         cameraView.autoFocus();
         cameraView.setOnTouchListener(new ZoomListener(this, borderBitmap) { //触摸监听
@@ -247,6 +222,35 @@ public class CameraActivity extends AppCompatActivity implements
         });
     }
 
+    /**
+     * 添加用于显示边缘图的SurfaceView
+     */
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
+    private void addSurfaceView() {
+        surfaceView = new SurfaceView(this);
+        surfaceHolder = surfaceView.getHolder();
+        surfaceView.setBackground(new BitmapDrawable(borderBitmap));
+        surfaceView.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                switch (event.getKeyCode()) {
+                    case KeyEvent.KEYCODE_BACK:
+                        onCloseCamera();
+                }
+                return false;
+            }
+        });
+
+        wmParams = new WindowManager.LayoutParams();
+        wmParams.width = borderBitmap.getWidth();
+        wmParams.height = borderBitmap.getHeight();
+        wmParams.flags = FLAG_NOT_TOUCHABLE;
+        ViewGroup parent = (ViewGroup) surfaceView.getParent();
+        if (parent != null) {
+            parent.removeAllViews();
+        }
+        APPUtils.wm.addView(surfaceView, wmParams);
+    }
 
     @Override
     public CameraHost getCameraHost() {

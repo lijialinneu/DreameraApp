@@ -21,12 +21,12 @@ import neu.dreamerajni.filter.BaseFilter;
 import neu.dreamerajni.filter.FilterFactory;
 
 /**
- * Created by froger_mcs on 11.11.14.
+ * Created by 10405 on 2016/6/6.
+ * photo filter adapter used in FilterActivity
  */
 public class PhotoFiltersAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private Context context;
-    private int itemsCount = 8;
 
     private ImageView photoView;
     private Bitmap photoBitmap;
@@ -36,7 +36,7 @@ public class PhotoFiltersAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         this.context = context;
         this.photoView = photoView;
         this.photoBitmap = photoBitmap;
-        this.dstBitmap = photoBitmap;
+        dstBitmap = photoBitmap;
     }
 
     @Override
@@ -67,17 +67,17 @@ public class PhotoFiltersAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
     @Override
     public int getItemCount() {
-        return itemsCount;
+        return 8;
     }
 
-    public static class PhotoFilterViewHolder extends RecyclerView.ViewHolder {
+    static class PhotoFilterViewHolder extends RecyclerView.ViewHolder {
 
         @Bind(R.id.id_filterImage)
         ImageView filterImageView;
         @Bind(R.id.id_filterText)
         TextView filterTextView;
 
-        public PhotoFilterViewHolder(View view) {
+        PhotoFilterViewHolder(View view) {
             super(view);
             ButterKnife.bind(this, view);
         }

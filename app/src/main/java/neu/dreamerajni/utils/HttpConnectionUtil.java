@@ -32,13 +32,17 @@ public class HttpConnectionUtil {
     private static final String PUT = "PUT";
     private static final String PATCH = "PATCH";
     private static final String DELETE = "DELETE";
-    public static  String result = "";
-    public static String jsonString = "";
+    static  String result = "";
+    static String jsonString = "";
 
-    public static final String SERVERURL = "http://139.129.209.183:5678/cross/";
-    public static final String PLACEURL = SERVERURL+"place/";
+    private static final String SERVERURL = "http://139.129.209.183:5678/cross/";
+    static final String PLACEURL = SERVERURL+"place/";
 
-
+    /**
+     * 解析
+     * @param paramMap
+     * @return
+     */
     private static String prepareParam(Map<String,Object> paramMap){
         StringBuffer sb = new StringBuffer();
         if(paramMap.isEmpty()){

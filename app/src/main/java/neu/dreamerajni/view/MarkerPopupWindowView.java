@@ -36,6 +36,7 @@ import neu.dreamerajni.utils.BMapControlUtil;
 
 /**
  * Created by 10405 on 2016/6/10.
+ * This class extends android.view, used in BMapControlUtil to show photo list.
  */
 
 public class MarkerPopupWindowView extends View{
@@ -52,23 +53,18 @@ public class MarkerPopupWindowView extends View{
     private static String intentPID; // 图片的ID作为参数传递到CameraActivity
 
     public Activity activity;
-//    private LayoutInflater mInflater;
     private boolean NEVERPOPUP = true;
-    private String noDataTip = "该处暂无数据";
     private static ImageView flagView;
 
     /**
      * 构造函数
-     * @param context
+     * @param context the activity
      * @return string
-     * @author 10405
      */
     public MarkerPopupWindowView(Context context){
         super(context);
         this.activity = (Activity) context;
         ButterKnife.bind(this, activity);
-//        mInflater = LayoutInflater.from(activity);
-
         cameraButton = (FloatingActionButton) activity.findViewById(R.id.cameraButton);
         gallery = (RecyclerView) activity.findViewById(R.id.id_gallery);
     }
@@ -76,10 +72,9 @@ public class MarkerPopupWindowView extends View{
 
     /**
      * closeButton 点击监听事件
-     * @author 10405
      */
     @OnClick(R.id.id_close_popup)
-    public void onCloseButtonClick(){
+    void onCloseButtonClick(){
 
         TranslateAnimation mShowAction = new TranslateAnimation(Animation.RELATIVE_TO_SELF, 0.0f,
                 Animation.RELATIVE_TO_SELF, 0.0f, Animation.RELATIVE_TO_SELF,
@@ -100,7 +95,6 @@ public class MarkerPopupWindowView extends View{
 
     /**
      * cameraView 点击监听事件
-     * @author 10405
      */
     @OnClick(R.id.cameraButton)
     public void onCameraButtonClick(){
@@ -114,7 +108,6 @@ public class MarkerPopupWindowView extends View{
 
     /**
      * 地图标注点 点击监听事件
-     * @author 10405
      */
     @TargetApi(Build.VERSION_CODES.M)
     public void popupWindow(String name, String imgList) throws JSONException {
@@ -130,6 +123,7 @@ public class MarkerPopupWindowView extends View{
         markerInfoLy.setVisibility(View.VISIBLE);
 
         if(imgList.equals("[]")) {
+            String noDataTip = "该处暂无数据";
             nameView.setText(noDataTip);
             gallery.setVisibility(GONE);
         } else {
@@ -147,16 +141,13 @@ public class MarkerPopupWindowView extends View{
 
     /**
      * 图片点击事件
-     * @author 10405
      */
     public static class MyImgClickListener implements View.OnClickListener {
 
         private String pictureId;
-//        private String url;
 
         public MyImgClickListener(String pictureId){
             this.pictureId = pictureId;
-//            this.url = url;
         }
 
         @Override
@@ -172,7 +163,6 @@ public class MarkerPopupWindowView extends View{
 
     /**
      * 删除已有的图片右上角标注
-     * @author 10405
      */
     private static void deleteOldSelected(){
         if(flagView != null) {
@@ -183,7 +173,6 @@ public class MarkerPopupWindowView extends View{
 
     /**
      * 异步加载图片的内部类
-     * @author 10405
      */
     public static class AsyncGetPicTask extends AsyncTask <Void, Void, Void>{
 

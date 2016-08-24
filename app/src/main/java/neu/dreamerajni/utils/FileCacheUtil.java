@@ -16,6 +16,7 @@ import java.util.Date;
 
 /**
  * Created by 10405 on 2016/6/7.
+ * This class is used to manage the file cache system.
  */
 
 public class FileCacheUtil {
@@ -31,8 +32,8 @@ public class FileCacheUtil {
     public String filename;
 
     /**
-     * 构造函数
-     * @param path
+     * Constructor
+     * @param path file path
      * @return void
      */
     public FileCacheUtil(String path){
@@ -40,9 +41,9 @@ public class FileCacheUtil {
     }
 
     /**
-     * 创建文件
-     * @param type
-     * @param picId
+     * This function is used to create files
+     * @param type file type 0:bitmap  1:json
+     * @param picId picture ID
      * @return file
      */
     private File createFiles(int type, String picId){
@@ -62,7 +63,8 @@ public class FileCacheUtil {
     }
 
     /**
-     * 删除文件
+     * This function is used to delete a file
+     * @param file  the file wanted to delete
      */
     public static void deleteFile(File file) {
         if (file.exists()) { // 判断文件是否存在
@@ -80,7 +82,8 @@ public class FileCacheUtil {
 
 
     /**
-     * 格式化时间
+     * Format Data
+     * @param string  data time string
      */
     private static long formatDate(String string) {
         long time = 0;
@@ -94,10 +97,12 @@ public class FileCacheUtil {
     }
 
 
-    //-----------------------------------JSON 部分 start----------------------------------------
+    /**
+     * The code below is related to picture
+     */
 
     /**
-     * 清除JSON缓存
+     * Clear JSON cache
      */
     static void cleanJSONCache() throws ParseException {
         File fileFloder = new File(FileCacheUtil.JSONPATH );
@@ -111,7 +116,8 @@ public class FileCacheUtil {
 
 
     /**
-     * 存储JSON到文件中
+     * Save JSON to file
+     * @param string  the JSON string
      */
     void saveJSON(String string) throws IOException {
         File file = createFiles(1, "");
@@ -123,7 +129,8 @@ public class FileCacheUtil {
     }
 
     /**
-     * 从文件中读取JSON字符串
+     * Get JSON by path
+     * @param path  the path of JSON
      * @return String
      */
     static String getJsonFromFile(final String path) throws IOException, ParseException {
@@ -159,6 +166,7 @@ public class FileCacheUtil {
 
     /**
      * 循环找到最新JSON文件的index
+     * @param files   all files in the folder
      * @return string
      */
     private static int getNewestFileIndex(File[] files) throws ParseException {
@@ -177,6 +185,7 @@ public class FileCacheUtil {
 
     /**
      * 循环找到最老JSON文件
+     * @param files  all files in the folder
      * @return string
      */
     private static int getOldestFileIndex(File[] files) throws ParseException {
@@ -218,6 +227,7 @@ public class FileCacheUtil {
 
     /**
      * 获得图片的文件名
+     * @param id  picture ID
      * @return string
      */
     String getPicFilename(String id) throws ParseException{
@@ -241,8 +251,8 @@ public class FileCacheUtil {
 
     /**
      * 按id从文件中读取图片
-     * @param path
-     * @param picId
+     * @param path the path of picture
+     * @param picId picture ID
      * @return string
      */
     static Bitmap getPicFromFile(final String path, final String picId)
@@ -272,6 +282,7 @@ public class FileCacheUtil {
 
     /**
      * 从文件中读取照片
+     * @param path the path of the picture
      * @return bitmap
      */
     static Bitmap getPhotoFromFile(final String path)
@@ -291,7 +302,7 @@ public class FileCacheUtil {
 
     /**
      * 按id存储图片到文件中
-     * @param bitmap
+     * @param bitmap the bitmap needed to be saved
      * @return void
      */
     public void savePicture(Bitmap bitmap, String id) throws IOException {

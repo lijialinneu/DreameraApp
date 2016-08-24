@@ -33,6 +33,7 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import neu.dreamerajni.R;
+import neu.dreamerajni.utils.APPUtils;
 import neu.dreamerajni.utils.AsyncGetDataUtil;
 import neu.dreamerajni.utils.FileCacheUtil;
 import neu.dreamerajni.utils.ImgToolKits;
@@ -57,7 +58,7 @@ public class FusionActivity extends AppCompatActivity  {
     @Bind(R.id.btnNextActivity)
     ImageButton nextButton;
 
-    private WindowManager wm;
+//    private WindowManager wm;
     private String id;                           //图片的id
     private Matrix matrix = new Matrix();        //前一个Activity传回的矩阵参数
     private float[] matrixValues = new float[9]; //用于获取矩阵的参数
@@ -66,7 +67,7 @@ public class FusionActivity extends AppCompatActivity  {
     private SurfaceView oldPictureView; //显示老照片的SurfaceView
     private int left = 0;               //老照片的left
     private int top = 0;                //老照片的top
-    private float screenWidth = 0;      //屏幕宽度，相机预览画面的宽度与屏幕的宽度相等
+//    private float screenWidth = 0;      //屏幕宽度，相机预览画面的宽度与屏幕的宽度相等
     private Bitmap maskBitmap;          //遮罩mask处理
     private Bitmap resultBitmap;        //最终结果图片
     private int xOffset = 0;            //悬浮窗中图片的x偏移量
@@ -93,8 +94,7 @@ public class FusionActivity extends AppCompatActivity  {
         matrixValues = bundle.getFloatArray("matrix"); //获取变换矩阵
         matrix.setValues(matrixValues);
 
-        wm = (WindowManager) this.getSystemService(Context.WINDOW_SERVICE);
-        screenWidth = wm.getDefaultDisplay().getWidth(); //屏幕的宽度1080
+        APPUtils.getScreenWidth(this);
 
         //获取X方向和Y方向补充图片的高度
         addX = ImgToolKits.addHeight * matrixValues[Matrix.MSCALE_X];
@@ -106,9 +106,6 @@ public class FusionActivity extends AppCompatActivity  {
 
     }
 
-
-
-
     /**
      * 初始化边缘图
      */
@@ -118,7 +115,8 @@ public class FusionActivity extends AppCompatActivity  {
         type = judgePicStyle(picFromFile) ? 0:1;
 
         //先把图片变成初始大小，然后再通过matrix变换
-        Bitmap borderBitmap = ImgToolKits.initBorderPic(picFromFile, screenWidth, screenWidth, false);
+        Bitmap borderBitmap = ImgToolKits.initBorderPic(picFromFile,
+                APPUtils.screenWidth, APPUtils.screenWidth, false);
         borderBitmap = Bitmap.createBitmap(borderBitmap, 0, 0,
                 borderBitmap.getWidth(), borderBitmap.getHeight(), matrix, true);
         int borderWidth = borderBitmap.getWidth();
@@ -158,8 +156,8 @@ public class FusionActivity extends AppCompatActivity  {
             }
         });
 
-        int leftw = ((int)screenWidth - copyPicFromFile.getWidth()) / 2;
-        int topw = ((int)screenWidth - copyPicFromFile.getHeight()) / 2;
+        int leftw = (APPUtils.screenWidth - copyPicFromFile.getWidth()) / 2;
+        int topw = (APPUtils.screenWidth - copyPicFromFile.getHeight()) / 2;
 
         WindowManager.LayoutParams wmParams = new WindowManager.LayoutParams();
         wmParams.x = (int)(left - leftw + type * addX);
@@ -174,7 +172,7 @@ public class FusionActivity extends AppCompatActivity  {
         if (parent != null) {
             parent.removeAllViews();
         }
-        wm.addView(oldPictureView, wmParams);
+        APPUtils.wm.addView(oldPictureView, wmParams);
     }
 
     /**
@@ -201,7 +199,7 @@ public class FusionActivity extends AppCompatActivity  {
         for(int i = 0; i < maskPixels.length; i++) {
             y = i / w;
             py = yOffset + y + photoView.getTop();
-            if(py <= photoView.getTop() || py >= photoView.getTop() + screenWidth) {
+            if(py <= photoView.getTop() || py >= photoView.getTop() + APPUtils.screenWidth) {
                 picPixels[i] = 0;
             }else {
                 if(maskPixels[i] == 0xff000000){ //黑色
@@ -235,7 +233,7 @@ public class FusionActivity extends AppCompatActivity  {
     protected void onDestroy() {
         super.onDestroy();
         //当activity 被destory时需要立即清除之前加载的view，否则会出现窗体泄露异常
-        wm.removeViewImmediate(oldPictureView);
+        APPUtils.wm.removeViewImmediate(oldPictureView);
     }
 
     @OnClick(R.id.btnBack)

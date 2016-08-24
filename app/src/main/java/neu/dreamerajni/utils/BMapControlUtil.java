@@ -25,7 +25,6 @@ import com.baidu.mapapi.map.MarkerOptions;
 import com.baidu.mapapi.map.MyLocationConfiguration;
 import com.baidu.mapapi.map.MyLocationConfiguration.LocationMode;
 import com.baidu.mapapi.map.MyLocationData;
-import com.baidu.mapapi.map.Overlay;
 import com.baidu.mapapi.map.OverlayOptions;
 import com.baidu.mapapi.map.TextOptions;
 import com.baidu.mapapi.model.LatLng;
@@ -44,6 +43,7 @@ import neu.dreamerajni.utils.MyOrientationListener.OnOrientationListener;
 
 /**
  * Created by 10405 on 2016/6/6.
+ * BMap Controller used in MainActivity
  */
 
 public class BMapControlUtil {
