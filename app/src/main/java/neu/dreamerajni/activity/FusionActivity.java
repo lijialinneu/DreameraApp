@@ -8,7 +8,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Paint;
-import android.graphics.PointF;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Build;
@@ -59,22 +58,15 @@ public class FusionActivity extends AppCompatActivity  {
     ImageButton nextButton;
 
     private WindowManager wm;
-    private WindowManager.LayoutParams wmParams; //屏幕参数
     private String id;                           //图片的id
     private Matrix matrix = new Matrix();        //前一个Activity传回的矩阵参数
     private float[] matrixValues = new float[9]; //用于获取矩阵的参数
     private Bitmap photoBitmap;         //拍摄的照片
-    private Bitmap picFromFile;         //从文件中获取的老照片
     private Bitmap copyPicFromFile;     //老照片的副本
-    private Bitmap borderBitmap;        //边缘检测后的图片
     private SurfaceView oldPictureView; //显示老照片的SurfaceView
-    private int borderWidth = 0;        //边缘图片的宽
-    private int borderHeight = 0;       //边缘图片的高
     private int left = 0;               //老照片的left
     private int top = 0;                //老照片的top
     private float screenWidth = 0;      //屏幕宽度，相机预览画面的宽度与屏幕的宽度相等
-    private float xTrans = 0;           //变换矩阵中的x方向位移的值
-    private float yTrans = 0;           //变换矩阵中的y方向位移的值
     private Bitmap maskBitmap;          //遮罩mask处理
     private Bitmap resultBitmap;        //最终结果图片
     private int xOffset = 0;            //悬浮窗中图片的x偏移量
@@ -88,12 +80,6 @@ public class FusionActivity extends AppCompatActivity  {
     private int[] picPixels;            //用于存储copyPicFromFile像素值得矩阵
     private int[] maskPixels;           //用于存储maskBitmap像素值得矩阵
 
-//    private double rotation = 0;
-//    private PointF mid = new PointF();
-//    private float tx = 0;
-//    private float ty = 0;
-//    private double aa;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,72 +90,61 @@ public class FusionActivity extends AppCompatActivity  {
         Intent intent = getIntent();
         Bundle bundle = intent.getExtras();
         id = bundle.getString("id");           //获取新拍摄的照片的id
-        matrixValues = bundle.getFloatArray("matrix");
+        matrixValues = bundle.getFloatArray("matrix"); //获取变换矩阵
         matrix.setValues(matrixValues);
-
-//        mid.x = bundle.getFloat("midx");
-//        mid.y = bundle.getFloat("midy");
-//
-//        System.out.println("asdf midx " + mid.x);
-//        System.out.println("asdf midy " + mid.y);
-//        for(int i = 0;i < matrixValues.length; i++) {
-//            System.out.println("asdf " + matrixValues[i]);
-//        }
-//
-//        aa = Math.cos(Math.asin(matrixValues[1]));
-//        System.out.println("asdf aa " + aa);
-//
-//        tx = (float)(-mid.x * aa + mid.y * matrixValues[1] + mid.x);
-//        ty = (float)(-mid.x * matrixValues[1] - mid.y * aa + mid.y);
-//
-//        System.out.println("asdf tx " + tx);
-//        System.out.println("asdf ty " + ty);
 
         wm = (WindowManager) this.getSystemService(Context.WINDOW_SERVICE);
         screenWidth = wm.getDefaultDisplay().getWidth(); //屏幕的宽度1080
+
+        //获取X方向和Y方向补充图片的高度
         addX = ImgToolKits.addHeight * matrixValues[Matrix.MSCALE_X];
         addY = ImgToolKits.addHeight * matrixValues[Matrix.MSCALE_Y];
 
         photoBitmap = AsyncGetDataUtil.getPhotoFromFile(); //取出拍摄的图片;
         photoView.setBackground(new BitmapDrawable(photoBitmap));
-        initOldPicture();  //初始化老照片
+        initOldPicture();      //初始化老照片
 
     }
 
 
+
+
     /**
      * 初始化边缘图
-     * @author 10405
      */
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
-    public void initOldPicture() {
-        picFromFile = AsyncGetDataUtil.getPicFromFile(id); //从缓存中取出图片
-        if(!judgePicStyle(picFromFile)) {
-            type = 1; //如果是竖向图片，type=1
-        }
+    private void initOldPicture() {
+        Bitmap picFromFile = AsyncGetDataUtil.getPicFromFile(id);
+        type = judgePicStyle(picFromFile) ? 0:1;
 
         //先把图片变成初始大小，然后再通过matrix变换
-        borderBitmap = ImgToolKits.initBorderPic(picFromFile, screenWidth, screenWidth, false);
+        Bitmap borderBitmap = ImgToolKits.initBorderPic(picFromFile, screenWidth, screenWidth, false);
         borderBitmap = Bitmap.createBitmap(borderBitmap, 0, 0,
                 borderBitmap.getWidth(), borderBitmap.getHeight(), matrix, true);
-        borderWidth = borderBitmap.getWidth();
-        borderHeight = borderBitmap.getHeight();
+        int borderWidth = borderBitmap.getWidth();
+        int borderHeight = borderBitmap.getHeight();
 
         copyPicFromFile = ImgToolKits.changeBitmapSize(picFromFile,
                 borderWidth - 2 * addX * type, borderHeight - 2 * addY * (1 - type));
 
         w = copyPicFromFile.getWidth();
         h = copyPicFromFile.getHeight();
-
-        xTrans = matrixValues[Matrix.MTRANS_X]; //x位移值
-        yTrans = matrixValues[Matrix.MTRANS_Y]; //y位移值
-
-//        left = (int) (xTrans * matrixValues[0] - ty);
-//        top = (int) ((yTrans * matrixValues[0] + photoView.getTop() - tx));
-
+        float xTrans = matrixValues[Matrix.MTRANS_X];
+        float yTrans = matrixValues[Matrix.MTRANS_Y];
         left = (int) xTrans;
         top = (int)(yTrans + photoView.getTop());
 
+        addOldPictureView(); //添加老照片层
+        addMask(); //添加mask
+
+        //recycle
+        borderBitmap.recycle();
+    }
+
+    /**
+     * 添加老照片层
+     */
+    private void addOldPictureView() {
         oldPictureView = new SurfaceView(this);
         oldPictureView.setBackground(new BitmapDrawable(copyPicFromFile));
         oldPictureView.setOnKeyListener(new View.OnKeyListener() {
@@ -186,7 +161,7 @@ public class FusionActivity extends AppCompatActivity  {
         int leftw = ((int)screenWidth - copyPicFromFile.getWidth()) / 2;
         int topw = ((int)screenWidth - copyPicFromFile.getHeight()) / 2;
 
-        wmParams = new WindowManager.LayoutParams();
+        WindowManager.LayoutParams wmParams = new WindowManager.LayoutParams();
         wmParams.x = (int)(left - leftw + type * addX);
         wmParams.y = (int)(top - topw + (1 - type) * addY);
         xOffset = wmParams.x + leftw;
@@ -200,34 +175,28 @@ public class FusionActivity extends AppCompatActivity  {
             parent.removeAllViews();
         }
         wm.addView(oldPictureView, wmParams);
-
-        addMask(); //添加mask
     }
 
     /**
      * 添加mask
      */
-    public void addMask() {
+    private void addMask() {
         maskBitmap = BitmapFactory.decodeResource(this.getResources(), R.mipmap.ic_mask);
         maskBitmap = Bitmap.createScaledBitmap(maskBitmap,
                 copyPicFromFile.getWidth(), copyPicFromFile.getHeight(), false);
-
         resultBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
-
         //前置相片添加蒙板效果
         picPixels = new int[w * h];
         maskPixels = new int[w * h];
-
         copyPicFromFile.getPixels(picPixels, 0, w, 0, 0, w, h);
         maskBitmap.getPixels(maskPixels, 0, w, 0, 0, w, h);
-
-        composite();
+        composite(); //老照片与mask的融合
     }
 
     /**
      * 老照片与mask的融合
      */
-    public void composite() {
+    private void composite() {
         int y, py;
         for(int i = 0; i < maskPixels.length; i++) {
             y = i / w;
@@ -250,17 +219,9 @@ public class FusionActivity extends AppCompatActivity  {
                 }
             }
         }
-
         //生成前置图片添加蒙板后的bitmap:resultBitmap
         resultBitmap.setPixels(picPixels, 0, w, 0, 0, w, h);
-
-//        matrixValues[2] = matrixValues[5] = 0;
-//        matrix.setValues(matrixValues);
-//        resultBitmap = Bitmap.createBitmap(resultBitmap, 0,0,
-//                resultBitmap.getWidth(), resultBitmap.getHeight(), matrix, true);
-
         oldPictureView.setBackground(new BitmapDrawable(resultBitmap));
-
     }
 
     @Override
@@ -278,28 +239,23 @@ public class FusionActivity extends AppCompatActivity  {
     }
 
     @OnClick(R.id.btnBack)
-    public void clickBack() {
+    void clickBack() {
         onBackPressed();
     }
 
 
     /**
      * 判断是宽 > 高的图片，还是高 > 宽的图片
-     * @param bitmap
      */
-    public boolean judgePicStyle(Bitmap bitmap) {
-        if(bitmap.getWidth() >= bitmap.getHeight()) {
-            return true;
-        } else {
-            return false;
-        }
+    private boolean judgePicStyle(Bitmap bitmap) {
+        return bitmap.getWidth() >= bitmap.getHeight();
     }
 
     /**
      * 转到下一个Activity
      */
     @OnClick(R.id.btnNextActivity)
-    public void gotoNextActivity() {
+    void gotoNextActivity() {
 
         Bitmap picture = Bitmap.createBitmap(1080, 1080, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(picture);
@@ -334,7 +290,7 @@ public class FusionActivity extends AppCompatActivity  {
     /**
      * 第一个SeekBar调整图片的alpha值
      */
-    public void adjustAlpha() {
+    private void adjustAlpha() {
         alphaSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -357,7 +313,7 @@ public class FusionActivity extends AppCompatActivity  {
     /**
      * 第二个SeekBar调整图片的alpha值
      */
-    public void adjustBlur() {
+    private void adjustBlur() {
         blurSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -399,7 +355,7 @@ public class FusionActivity extends AppCompatActivity  {
 
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
-    public Bitmap blurBitmap(Bitmap bitmap, float radius){
+    private Bitmap blurBitmap(Bitmap bitmap, float radius){
 
         Bitmap outBitmap = Bitmap.createBitmap(
                 bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);

@@ -2,7 +2,6 @@ package neu.dreamerajni.activity;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -11,7 +10,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.SubMenu;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -22,7 +20,6 @@ import java.lang.reflect.Method;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
-import butterknife.OnClick;
 import neu.dreamerajni.R;
 import neu.dreamerajni.utils.APPUtils;
 import neu.dreamerajni.utils.BMapControlUtil;
@@ -37,13 +34,10 @@ public class MainActivity extends AppCompatActivity
     @Nullable
     @Bind(R.id.ivLogo)
     ImageView ivLogo;
-//    @Bind(R.id.btnOldMap)
-//    FloatingActionButton btnOldMap;
     @Bind(R.id.old_map_layout)
     LinearLayout oldMapLayout;
 
     private BMapControlUtil bMapControlUtil = null;
-    private OldMapPopupView oldMapPopupView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,38 +52,48 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.setDrawerListener(toggle);
+        if (drawer != null) {
+            drawer.setDrawerListener(toggle);
+        }
         toggle.syncState();
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
+        if (navigationView != null) {
+            navigationView.setNavigationItemSelectedListener(this);
+        }
 
         //调用BMap控件
         bMapControlUtil = new BMapControlUtil(this);
 
     }
 
-    public void startIntroAnimation() {
+    private void startIntroAnimation() {
         int actionbarSize = APPUtils.dpToPx(56);
-        toolbar.setTranslationY(-actionbarSize);
-        ivLogo.setTranslationY(-actionbarSize);
-        toolbar.animate()
-                .translationY(0)
-                .setDuration(300)
-                .setStartDelay(300);
-        ivLogo.animate()
-                .translationY(0)
-                .setDuration(300)
-                .setStartDelay(400);
+        if (toolbar != null) {
+            toolbar.setTranslationY(-actionbarSize);
+            toolbar.animate()
+                    .translationY(0)
+                    .setDuration(300)
+                    .setStartDelay(300);
+        }
+        if (ivLogo != null) {
+            ivLogo.setTranslationY(-actionbarSize);
+            ivLogo.animate()
+                    .translationY(0)
+                    .setDuration(300)
+                    .setStartDelay(400);
+        }
     }
 
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.closeDrawer(GravityCompat.START);
-        } else {
-            super.onBackPressed();
+        if (drawer != null) {
+            if (drawer.isDrawerOpen(GravityCompat.START)) {
+                drawer.closeDrawer(GravityCompat.START);
+            } else {
+                super.onBackPressed();
+            }
         }
     }
 
@@ -159,16 +163,18 @@ public class MainActivity extends AppCompatActivity
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawer.closeDrawer(GravityCompat.START);
+        if (drawer != null) {
+            drawer.closeDrawer(GravityCompat.START);
+        }
         return true;
     }
 
-    public void setOldMap() {
+    private void setOldMap() {
         oldMapLayout.setVisibility(View.VISIBLE);
-        oldMapPopupView = new OldMapPopupView(this, bMapControlUtil);
+        OldMapPopupView oldMapPopupView = new OldMapPopupView(this, bMapControlUtil);
     }
 
-    public void clearOldMap() {
+    private void clearOldMap() {
         if(bMapControlUtil.oldMapOverlay != null) {
             bMapControlUtil.oldMapOverlay.remove();
             bMapControlUtil.bdGround.recycle();
@@ -177,15 +183,6 @@ public class MainActivity extends AppCompatActivity
             System.gc();
         }
     }
-
-//    @OnClick(R.id.btnOldMap)
-//    public void setOldMap() {
-//        oldMapLayout.setVisibility(View.VISIBLE);
-//        oldMapPopupView = new OldMapPopupView(this, bMapControlUtil);
-//
-//    }
-
-
 
     @Override
     protected void onStart(){

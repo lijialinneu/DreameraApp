@@ -21,9 +21,9 @@ import java.util.Date;
 public class FileCacheUtil {
 
     private String path; //路径
-    public static final File STORAGE = Environment.getExternalStorageDirectory();
-    public static final String JSONPATH = STORAGE + "/Dreamera/resource/data";       //缓存JSON数据、该目录下只存一个文件，时间一到就更新
-    public static final String PICTUREPATH = STORAGE + "/Dreamera/resource/picture"; //缓存图片
+    private static final File STORAGE = Environment.getExternalStorageDirectory();
+    static final String JSONPATH = STORAGE + "/Dreamera/resource/data";       //缓存JSON数据、该目录下只存一个文件，时间一到就更新
+    static final String PICTUREPATH = STORAGE + "/Dreamera/resource/picture"; //缓存图片
     public static final String CAMERAPATH = STORAGE +  "/Dreamera/photo/camera";     //存储拍摄后的照片
     public static final String EDITPATH = STORAGE +  "/Dreamera/photo/edit";         //存储编辑后的图片
     public static final String TEMPPATH = STORAGE + "/Dreamera/photo/temp";          //存储临时文件
@@ -34,7 +34,6 @@ public class FileCacheUtil {
      * 构造函数
      * @param path
      * @return void
-     * @author 10405
      */
     public FileCacheUtil(String path){
         this.path = path;
@@ -45,9 +44,8 @@ public class FileCacheUtil {
      * @param type
      * @param picId
      * @return file
-     * @author 10405
      */
-    public File createFiles(int type, String picId){
+    private File createFiles(int type, String picId){
         Date date = new Date();
         SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
         filename = format.format(date);
@@ -60,15 +58,11 @@ public class FileCacheUtil {
         if (!fileFolder.exists()) { // 如果目录不存在，则创建一个目录
             fileFolder.mkdirs(); // 创建多级目录，要用mkdirs
         }
-        File file = new File(fileFolder, filename);
-        return file;
+        return new File(fileFolder, filename);
     }
 
     /**
      * 删除文件
-     * @param file
-     * @return void
-     * @author 10405
      */
     public static void deleteFile(File file) {
         if (file.exists()) { // 判断文件是否存在
@@ -76,8 +70,8 @@ public class FileCacheUtil {
                 file.delete();
             } else if (file.isDirectory()) { // 否则如果它是一个目录
                 File files[] = file.listFiles(); // 声明目录下所有的文件 files[];
-                for (int i = 0; i < files.length; i++) { // 遍历目录下所有的文件
-                    deleteFile(files[i]); // 把每个文件 用这个方法进行迭代
+                for (File file1 : files) { // 遍历目录下所有的文件
+                    deleteFile(file1); // 把每个文件 用这个方法进行迭代
                 }
             }
             file.delete();
@@ -87,11 +81,8 @@ public class FileCacheUtil {
 
     /**
      * 格式化时间
-     * @param string
-     * @author 10405
-     * @return
      */
-    public static long formatDate(String string) {
+    private static long formatDate(String string) {
         long time = 0;
         SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
         try {
@@ -107,10 +98,8 @@ public class FileCacheUtil {
 
     /**
      * 清除JSON缓存
-     * @return void
-     * @author 10405
      */
-    public static void cleanJSONCache() throws ParseException {
+    static void cleanJSONCache() throws ParseException {
         File fileFloder = new File(FileCacheUtil.JSONPATH );
         File files[] = fileFloder.listFiles(); // 目录下所有的文件 files[];
         if( files.length >= 2 ) { //文件数>=2 说明下载成功
@@ -123,11 +112,8 @@ public class FileCacheUtil {
 
     /**
      * 存储JSON到文件中
-     * @param string
-     * @return void
-     * @author 10405
      */
-    public void saveJSON(String string) throws IOException {
+    void saveJSON(String string) throws IOException {
         File file = createFiles(1, "");
         FileOutputStream outputStream = new FileOutputStream(file);// 文件输出流
         outputStream.write(string.getBytes());
@@ -138,11 +124,9 @@ public class FileCacheUtil {
 
     /**
      * 从文件中读取JSON字符串
-     * @param path
-     * @return string
-     * @author 10405
+     * @return String
      */
-    public static String getJsonFromFile(final String path) throws IOException, ParseException {
+    static String getJsonFromFile(final String path) throws IOException, ParseException {
         File fileFolder = new File(path);
         if(fileFolder.exists()){
             File files[] = fileFolder.listFiles(); // 声明目录下所有的文件 files[];
@@ -176,10 +160,8 @@ public class FileCacheUtil {
     /**
      * 循环找到最新JSON文件的index
      * @return string
-     * @author
-     * @param files
      */
-    public static int getNewestFileIndex(File[] files) throws ParseException {
+    private static int getNewestFileIndex(File[] files) throws ParseException {
         long newestTime = formatDate(files[0].getName());
         int newestIndex = 0;   //默认第一个文件最新
         for(int i = 1; i < files.length; i++){   //循环找到最新文件
@@ -196,9 +178,8 @@ public class FileCacheUtil {
     /**
      * 循环找到最老JSON文件
      * @return string
-     * @author
      */
-    public static int getOldestFileIndex(File[] files) throws ParseException {
+    private static int getOldestFileIndex(File[] files) throws ParseException {
         long oldestTime = formatDate(files[0].getName());
         int oldestIndex = 0;    //默认第一个文件最老
         for(int i = 1; i < files.length; i++){ //循环找到最老文件
@@ -214,9 +195,8 @@ public class FileCacheUtil {
     /**
      * 获得JSON文件的文件名
      * @return string
-     * @author
      */
-     public String getFilename() throws ParseException{
+    String getFilename() throws ParseException{
          File fileFolder = new File(path);
          if(fileFolder.exists()){
              File files[] = fileFolder.listFiles(); // 目录下所有的文件 files[];
@@ -239,17 +219,16 @@ public class FileCacheUtil {
     /**
      * 获得图片的文件名
      * @return string
-     * @author
      */
-    public String getPicFilename(String id) throws ParseException{
+    String getPicFilename(String id) throws ParseException{
         File fileFolder = new File(path);
         if(fileFolder.exists()){
             File files[] = fileFolder.listFiles(); // 目录下所有的文件 files[];
             if(files.length >= 0) {
-                for(int i = 0; i < files.length; i++){
-                    String name = files[i].getName();
+                for (File file : files) {
+                    String name = file.getName();
                     String idFromName = name.substring(0, name.indexOf('+'));
-                    if(idFromName.equals(id)) {
+                    if (idFromName.equals(id)) {
                         return name;
                     }
                 }
@@ -265,22 +244,21 @@ public class FileCacheUtil {
      * @param path
      * @param picId
      * @return string
-     * @author 10405
      */
-    public static Bitmap getPicFromFile(final String path, final String picId)
+    static Bitmap getPicFromFile(final String path, final String picId)
             throws IOException, ParseException {
         File fileFolder = new File(path);
         if(fileFolder.exists()){
             File files[] = fileFolder.listFiles(); // 声明目录下所有的文件 files[];
             Bitmap bitmap = null;
             if(files.length == 0) {//如果没有文件,可能是没有下载完
-                return bitmap;
+                return null;
             }else{
-                for (int i = 0; i < files.length; i++ ){
-                    String name = files[i].getName();
+                for (File file : files) {
+                    String name = file.getName();
                     String idFromName = name.substring(0, name.indexOf('+'));
-                    if(idFromName.equals(picId)) {
-                        bitmap = BitmapFactory.decodeFile(path + '/'+name);
+                    if (idFromName.equals(picId)) {
+                        bitmap = BitmapFactory.decodeFile(path + '/' + name);
                         break;
                     }
                 }
@@ -295,9 +273,8 @@ public class FileCacheUtil {
     /**
      * 从文件中读取照片
      * @return bitmap
-     * @author 10405
      */
-    public static Bitmap getPhotoFromFile(final String path)
+    static Bitmap getPhotoFromFile(final String path)
             throws IOException, ParseException {
         File fileFolder = new File(path);
         Bitmap bitmap = null;
@@ -316,7 +293,6 @@ public class FileCacheUtil {
      * 按id存储图片到文件中
      * @param bitmap
      * @return void
-     * @author 10405
      */
     public void savePicture(Bitmap bitmap, String id) throws IOException {
         File file = createFiles(0, id);

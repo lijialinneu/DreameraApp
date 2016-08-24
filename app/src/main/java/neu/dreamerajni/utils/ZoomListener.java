@@ -21,7 +21,6 @@ public abstract class ZoomListener implements ScaleGestureDetector.OnScaleGestur
         View.OnTouchListener {
 
     private WindowManager wm;
-    private WindowManager.LayoutParams wmParams; //屏幕参数
     private Context context;
     private Bitmap bitmap;
     private int bitmapWidth;
@@ -39,7 +38,6 @@ public abstract class ZoomListener implements ScaleGestureDetector.OnScaleGestur
     PointF pA = new PointF();
     PointF pB = new PointF();
     public static PointF mid = new PointF();
-    double rotation = 0.0;
     float dist = 1f;
 
     /**
@@ -89,32 +87,30 @@ public abstract class ZoomListener implements ScaleGestureDetector.OnScaleGestur
                     pB.set(event.getX(1), event.getY(1));
                     mid.set((event.getX(0) + event.getX(1)) / 2,
                             (event.getY(0) + event.getY(1)) / 2);
-                    mode = ZOOM_OR_ROTATE;
-//                    mode = ZOOM;
-
+//                    mode = ZOOM_OR_ROTATE;
+                    mode = ZOOM;
                 }
                 break;
 
             case MotionEvent.ACTION_MOVE:
-                if(mode == ZOOM_OR_ROTATE) {
-                    PointF pC = new PointF(event.getX(1) - event.getX(0) + pA.x,
-                            event.getY(1) - event.getY(0) + pA.y);
-                    double a = spacing(pB.x, pB.y, pC.x, pC.y);
-                    double b = spacing(pA.x, pA.y, pC.x, pC.y);
-                    double c = spacing(pA.x, pA.y, pB.x, pB.y);
-                    if (a >= 10) {
-                        double cosB = (a * a + c * c - b * b) / (2 * a * c);
-                        double angleB = Math.acos(cosB);
-                        double PID4 = Math.PI / 4;
-                        if (angleB > PID4 && angleB < 3 * PID4) {
-                            mode = ROTATE;
-                            rotation = 0;
-                        } else {
-                            mode = ZOOM;
-                        }
-                    }
-                }
-
+//                if(mode == ZOOM_OR_ROTATE) {
+//                    PointF pC = new PointF(event.getX(1) - event.getX(0) + pA.x,
+//                            event.getY(1) - event.getY(0) + pA.y);
+//                    double a = spacing(pB.x, pB.y, pC.x, pC.y);
+//                    double b = spacing(pA.x, pA.y, pC.x, pC.y);
+//                    double c = spacing(pA.x, pA.y, pB.x, pB.y);
+//                    if (a >= 10) {
+//                        double cosB = (a * a + c * c - b * b) / (2 * a * c);
+//                        double angleB = Math.acos(cosB);
+//                        double PID4 = Math.PI / 4;
+//                        if (angleB > PID4 && angleB < 3 * PID4) {
+//                            mode = ROTATE;
+//                            rotation = 0;
+//                        } else {
+//                            mode = ZOOM;
+//                        }
+//                    }
+//                }
                 if(mode == DRAG){
                     mScaleMatrix.set(saveMatrix);
                     mScaleMatrix.postTranslate(event.getX()- pA.x, event.getY() - pA.y);// 平移

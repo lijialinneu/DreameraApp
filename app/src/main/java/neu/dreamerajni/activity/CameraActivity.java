@@ -9,14 +9,11 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
-import android.graphics.Paint;
 import android.graphics.PixelFormat;
-import android.graphics.PointF;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.hardware.Camera;
-import android.media.Image;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -29,7 +26,6 @@ import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.ImageView;
 
 import com.commonsware.cwac.camera.CameraHost;
 import com.commonsware.cwac.camera.CameraHostProvider;
@@ -58,8 +54,6 @@ import static android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE;
 public class CameraActivity extends AppCompatActivity implements
         RevealBackgroundView.OnStateChangeListener, CameraHostProvider {
 
-    public static final String ARG_REVEAL_START_LOCATION = "reveal_start_location";
-
     @Bind(R.id.vRevealBackground)
     RevealBackgroundView vRevealBackground;
     @Bind(R.id.vPhotoRoot)
@@ -68,32 +62,24 @@ public class CameraActivity extends AppCompatActivity implements
     CameraView cameraView;
     @Bind(R.id.btnTakePhoto)
     Button btnTakePhoto;
-//    @Bind(R.id.guide_view)
-//    ImageView guideView;
 
     private String pictureID;            //从上一个Activity传递过来的图片的ID
     private SurfaceView surfaceView;     //surfaceView用于绘制边缘图
     private SurfaceHolder surfaceHolder;
     private int zoom = 0;                //相机焦距
-    private Bitmap picFromFile;          //老照片
     private Bitmap borderBitmap;         //边缘图
     private WindowManager wm;
     private WindowManager.LayoutParams wmParams;
     private Matrix lastMatrix = new Matrix();  //初始化变换矩阵
     private  Canvas canvas;
-//    private boolean guideLineOpen = true;
-//    private ImageView guideView;
 
     /**
      * 一个静态函数，用于处理activity之间的参数传递
-     * @param startingLocation
-     * @param startingActivity
-     * @param id
      */
     public static void startCameraFromLocation(int[] startingLocation,
                                                Activity startingActivity, String id) {
         Intent intent = new Intent(startingActivity, CameraActivity.class);
-        intent.putExtra(ARG_REVEAL_START_LOCATION, startingLocation);
+        intent.putExtra("startingLocation", startingLocation);
         intent.putExtra("id", id);
         startingActivity.startActivity(intent);
     }
@@ -112,7 +98,7 @@ public class CameraActivity extends AppCompatActivity implements
         vRevealBackground.setFillPaintColor(0xFF16181a);
         vRevealBackground.setOnStateChangeListener(this);
         if (savedInstanceState == null) {
-            final int[] startingLocation = getIntent().getIntArrayExtra(ARG_REVEAL_START_LOCATION);
+            final int[] startingLocation = getIntent().getIntArrayExtra("startingLocation");
             vRevealBackground.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
                 @Override
                 public boolean onPreDraw() {
@@ -126,13 +112,11 @@ public class CameraActivity extends AppCompatActivity implements
         }
     }
 
-
     @Override
     protected void onResume() {
         super.onResume();
         cameraView.onResume();
     }
-
 
     @Override
     protected void onPause() {
@@ -150,14 +134,13 @@ public class CameraActivity extends AppCompatActivity implements
     }
 
     @OnClick(R.id.btnTakePhoto)
-    public void onTakePhotoClick() {
+    void onTakePhotoClick() {
         btnTakePhoto.setEnabled(false);
         cameraView.takePicture(true, true);
-
     }
 
     @OnClick(R.id.btnCloseCamera)
-    public void onCloseCamera() {
+    void onCloseCamera() {
         onBackPressed();
     }
 
@@ -172,11 +155,10 @@ public class CameraActivity extends AppCompatActivity implements
     }
 
     /**
-     * 相机预览界面缩小（也就是焦距缩小？）
-     * @author 10405
+     * 相机预览界面缩小
      */
     @OnClick(R.id.smaller)
-    public void onZoomSmaller(){
+    void onZoomSmaller(){
         try{
             zoom -= 6;
             zoom = zoom < 0 ? 0 : zoom;
@@ -190,10 +172,9 @@ public class CameraActivity extends AppCompatActivity implements
 
     /**
      * 相机预览界面放大（也就是焦距变大？）
-     * @author 10405
      */
     @OnClick(R.id.bigger)
-    public void onZoomBigger(){
+    void onZoomBigger(){
         try{
             zoom += 6;
             ZoomTransaction z = cameraView.zoomTo(zoom);
@@ -206,15 +187,14 @@ public class CameraActivity extends AppCompatActivity implements
 
     /**
      * 添加轮廓图
-     * @author 10405
      */
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
-    public void addBorderPicture() {
+    private void addBorderPicture() {
 
         Intent intent = getIntent();
         Bundle bundle = intent.getExtras();//从上一个Activity获取参数图片
         pictureID = bundle.getString("id");
-        picFromFile = AsyncGetDataUtil.getPicFromFile(pictureID); //从缓存中取出图片
+        Bitmap picFromFile = AsyncGetDataUtil.getPicFromFile(pictureID);
 
         wm = (WindowManager) this.getSystemService(Context.WINDOW_SERVICE);
 
@@ -265,7 +245,6 @@ public class CameraActivity extends AppCompatActivity implements
                 lastMatrix.set(matrix);
             }
         });
-
     }
 
 
@@ -274,11 +253,11 @@ public class CameraActivity extends AppCompatActivity implements
         return new MyCameraHost(this);
     }
 
-    class MyCameraHost extends SimpleCameraHost {
+    private class MyCameraHost extends SimpleCameraHost {
 
         private Camera.Size previewSize;
 
-        public MyCameraHost(Context ctxt) {
+        MyCameraHost(Context ctxt) {
             super(ctxt);
         }
 
@@ -301,63 +280,47 @@ public class CameraActivity extends AppCompatActivity implements
 
         @Override
         public void saveImage(PictureTransaction xact, byte[] image) {
-
-            String path = FileCacheUtil.CAMERAPATH; //存储JSON的路径
-            FileCacheUtil fileCacheUtil = new FileCacheUtil(path);
-            // 目录下只存一个临时文件，所以在保存之前，删除其余文件
-            FileCacheUtil.deleteFile( new File(path));
-            Bitmap bitmap = BitmapFactory.decodeByteArray(image, 0, image.length);
-
-            Rect frame = new Rect();
-            getWindow().getDecorView().getWindowVisibleDisplayFrame(frame);
-            int statusBarHeight = frame.top;
-
-            try { //TODO 此处有BUG
-                bitmap = Bitmap.createBitmap(bitmap,
-                        vTakePhotoRoot.getLeft(),
-                        vTakePhotoRoot.getTop() + statusBarHeight,
-                        vTakePhotoRoot.getWidth(),
-                        vTakePhotoRoot.getHeight()
-                );
-            }catch (Exception e){
-                e.printStackTrace();
-            }
-
-            try {
-                fileCacheUtil.savePicture(bitmap, "Photo");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            //跳转到下一个Activity
-            Intent intent = new Intent();
-            intent.setClass(CameraActivity.this, FusionActivity.class);
-            intent.putExtra("id", pictureID);
-
-//            intent.putExtra("midx", ZoomListener.mid.x);
-//            intent.putExtra("midy", ZoomListener.mid.y);
-
-            float[] matrixValues = new float[9];
-            lastMatrix.getValues(matrixValues);
-            intent.putExtra("matrix", matrixValues); //传递矩阵
-            CameraActivity.this.startActivity(intent);
-
+            saveImageToFile(image);
         }
     }
 
 
     /**
-     * 绘制辅助线
+     * 存储照片
      */
-    @OnClick(R.id.guide_line)
-    public void drawGuideLine() {
-//        if(guideLineOpen) {
-//            guideView.setVisibility(View.GONE);
-//            guideLineOpen = false;
-//        } else {
-//           guideView.setVisibility(View.VISIBLE);
-//            guideLineOpen = true;
-//        }
+    private void saveImageToFile ( byte[] image) {
+        String path = FileCacheUtil.CAMERAPATH; //存储JSON的路径
+        FileCacheUtil fileCacheUtil = new FileCacheUtil(path);
+        // 目录下只存一个临时文件，所以在保存之前，删除其余文件
+        FileCacheUtil.deleteFile( new File(path));
+        Bitmap bitmap = BitmapFactory.decodeByteArray(image, 0, image.length);
+
+        Rect frame = new Rect();
+        getWindow().getDecorView().getWindowVisibleDisplayFrame(frame);
+        try {
+            bitmap = Bitmap.createBitmap(bitmap, vTakePhotoRoot.getLeft(),
+                    vTakePhotoRoot.getTop() + frame.top,
+                    vTakePhotoRoot.getWidth(), vTakePhotoRoot.getHeight()
+            );
+            fileCacheUtil.savePicture(bitmap, "Photo");
+            gotoFusionActivity();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
+    /**
+     * 跳转到FusionActivity
+     */
+    private void gotoFusionActivity() {
+        //跳转到下一个Activity
+        Intent intent = new Intent();
+        intent.setClass(CameraActivity.this, FusionActivity.class);
+        intent.putExtra("id", pictureID);
+
+        float[] matrixValues = new float[9];
+        lastMatrix.getValues(matrixValues);
+        intent.putExtra("matrix", matrixValues); //传递矩阵
+        CameraActivity.this.startActivity(intent);
+    }
 }
