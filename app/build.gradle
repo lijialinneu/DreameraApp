@@ -1,3 +1,100 @@
+//apply plugin: 'com.android.model.application'
+//
+//model {
+//    android {
+//        compileSdkVersion = 23
+//        buildToolsVersion = "23.0.3"
+//        defaultConfig {
+//            applicationId  = "neu.dreamerajni"
+//            minSdkVersion.apiLevel = 15
+//            targetSdkVersion.apiLevel = 23
+//            versionCode = 1
+//            versionName = "1.0"
+//            testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+//        }
+//
+//        // 配置ndk
+//        ndk {
+//            //生成so的名字，是必须的
+//            moduleName = "OpenCV"
+//            toolchain = 'clang'
+//            CFlags.add('-std=c99')
+//
+//            cppFlags.addAll([
+//                    "-I${file("C:/Users/10405/AndroidStudioProjects/DreameraJni/native/jni/include")}".toString(),
+//                    "-I${file("C:/Users/10405/AndroidStudioProjects/DreameraJni/native/jni/include/opencv")}".toString(),
+//                    "-I${file("C:/Users/10405/AndroidStudioProjects/DreameraJni/native/jni/include/opencv2")}".toString()
+//            ])
+//
+//            //添加依赖库
+//            ldLibs.addAll(['android', 'log', 'z'])
+//            //生成不同abi体系的so库
+////            abiFilters.addAll(['armeabi', 'armeabi-v7a'])
+//            abiFilters.addAll(['armeabi'])
+//
+//            stl "gnustl_shared"
+////            stl "gnustl_static"
+////            stl "stlport_static"
+//        }
+//        repositories {
+//            maven {
+//                url = "https://repo.commonsware.com.s3.amazonaws.com"
+//            }
+//        }
+//
+//        buildTypes {
+//            release {
+//                minifyEnabled = false
+//                proguardFiles.add(file('proguard-android.txt'))
+//            }
+//        }
+//
+//        productFlavors { //added all productFlavors code
+//            create("arm") {
+//                ndk{
+//                    abiFilters.add("armeabi")
+//                    File curDir = file('../')
+//                    curDir = file(curDir.absolutePath)
+//                    String libsDir = curDir.absolutePath+"\\native\\libs\\armeabi\\" //"-L" +
+//                    ldFlags.add(libsDir + "libopencv_calib3d.a")
+//                    ldFlags.add(libsDir + "libopencv_core.a")
+//                    ldFlags.add(libsDir + "libopencv_features2d.a")
+//                    ldFlags.add(libsDir + "libopencv_flann.a")
+//                    ldFlags.add(libsDir + "libopencv_highgui.a")
+//                    ldFlags.add(libsDir + "libopencv_imgcodecs.a")
+//                    ldFlags.add(libsDir + "libopencv_imgproc.a")
+//                    ldFlags.add(libsDir + "libopencv_java3.so")
+//                    ldFlags.add(libsDir + "libopencv_ml.a")
+//                    ldFlags.add(libsDir + "libopencv_objdetect.a")
+//                    ldFlags.add(libsDir + "libopencv_photo.a")
+//                    ldFlags.add(libsDir + "libopencv_shape.a")
+//                    ldFlags.add(libsDir + "libopencv_stitching.a")
+//                    ldFlags.add(libsDir + "libopencv_superres.a")
+//                }
+//            }
+//            create("fat") {
+//            }
+//        }
+//
+//        // Configures source set directory.
+//        sources {
+//            main {
+//                jni {
+//                    source {
+//                        srcDir "src"
+//                    }
+//                }
+//                jniLibs {
+//                    source {
+//                        srcDir "src/main/libs, src/main/jniLibs"
+//                    }
+//                }
+//            }
+//        }
+//
+//}
+
+
 apply plugin: 'com.android.application'
 
 android {
@@ -10,12 +107,19 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+        ndk {
+            moduleName "OpenCV"          //生成的so名字
+//            abiFilters "armeabi", "armeabi-v7a", "x86" //输出指定三种abi体系结构下的so库，可忽略
+        }
+
     }
     repositories {
         maven {
             url "https://repo.commonsware.com.s3.amazonaws.com"
         }
     }
+
     buildTypes {
         release {
             minifyEnabled false
@@ -23,6 +127,7 @@ android {
         }
         debug {
             jniDebuggable true
+            debuggable true
         }
     }
 
@@ -64,16 +169,16 @@ android {
     }
 
     clean.dependsOn 'ndkClean'
-
 }
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    //add on 2016-07-02 by 10405
     compile files('libs/BaiduLBS_Android.jar')
     compile files('libs/baidumapapi_base_v3_7_1.jar')
     compile files('libs/baidumapapi_map_v3_7_1.jar')
     compile files('libs/baidumapapi_util_v3_7_1.jar')
+    compile files('libs/pinyin4android1.0.jar')
+    compile files('libs/pinyin4j-2.5.0.jar')
     compile 'com.android.support:appcompat-v7:23.4.0'
     compile 'com.android.support.constraint:constraint-layout:1.0.0-alpha1'
     compile 'com.android.support:design:23.4.0'
@@ -83,6 +188,4 @@ dependencies {
     androidTestCompile 'com.android.support.test.espresso:espresso-core:2.2.2'
     androidTestCompile 'com.android.support.test:runner:0.5'
     androidTestCompile 'com.android.support:support-annotations:23.4.0'
-    compile files('libs/pinyin4android1.0.jar')
-    compile files('libs/pinyin4j-2.5.0.jar')
 }

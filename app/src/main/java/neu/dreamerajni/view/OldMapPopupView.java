@@ -17,6 +17,7 @@ import neu.dreamerajni.utils.BMapControlUtil;
 
 /**
  * Created by 10405 on 2016/8/14.
+ * This class extends android.view to show old map view in the MainActivity
  */
 
 public class OldMapPopupView extends View {
@@ -32,7 +33,7 @@ public class OldMapPopupView extends View {
     public OldMapPopupView(Context context, BMapControlUtil bMapControlUtil) {
         super(context);
         this.activity = (Activity) context;
-        this.bMapControlUtil = bMapControlUtil;
+        OldMapPopupView.bMapControlUtil = bMapControlUtil;
         ButterKnife.bind(this, activity);
         linearLayout = (LinearLayout) activity.findViewById(R.id.old_map_layout);
         gallery = (RecyclerView) activity.findViewById(R.id.id_oldMapList);
@@ -41,9 +42,9 @@ public class OldMapPopupView extends View {
     }
 
     /**
-     * 显示老地图RecyclerView
+     * Show old map recycler view
      */
-    public void showOldMap(){
+    private void showOldMap(){
         linearLayout.setVisibility(VISIBLE);
         OldMapListAdapter oldMapListAdapter = new OldMapListAdapter(activity);
         gallery.setHasFixedSize(true);
@@ -54,7 +55,7 @@ public class OldMapPopupView extends View {
 
 
     /**
-     * 老地图点击事件
+     * Old map clickListener
      */
     public static class MyImgClickListener implements View.OnClickListener {
         @Override
@@ -63,8 +64,6 @@ public class OldMapPopupView extends View {
             int i =  (int) v.getTag(); // 显示对号小图标
             flagView = (ImageView) gallery.findViewWithTag(i + "a");
             flagView.setVisibility(VISIBLE);
-//            seekBar.setVisibility(VISIBLE);
-
             bMapControlUtil.addOldMapOverlay(i);
 
             seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){
@@ -91,8 +90,7 @@ public class OldMapPopupView extends View {
     }
 
     /**
-     * 删除已有的图片右上角标注
-     * @author 10405
+     * Delete old selected flag.
      */
     private static void deleteOldSelected(){
         if(flagView != null) {
@@ -101,19 +99,7 @@ public class OldMapPopupView extends View {
     }
 
     @OnClick(R.id.id_close_oldMap)
-    public void closeOldMap() {
+    void closeOldMap() {
         linearLayout.setVisibility(GONE);
     }
-
-//    @OnClick(R.id.btnClearOldMap)
-//    public void clearOldMap() {
-//        if(bMapControlUtil.oldMapOverlay != null) {
-//            bMapControlUtil.oldMapOverlay.remove();
-//            bMapControlUtil.bdGround.recycle();
-//            bMapControlUtil.bdGround = null;
-//            bMapControlUtil.oldMapOverlay = null;
-//            System.gc();
-//        }
-//    }
-
 }

@@ -21,6 +21,7 @@ import java.util.Map;
 
 /**
  * Created by 10405 on 2016/6/6.
+ * A class between activity and file cache.
  */
 
 public class AsyncGetDataUtil {
@@ -29,7 +30,7 @@ public class AsyncGetDataUtil {
     public static Bitmap bitmap;               //图片资源
 
     /**
-     * 获取缓存的JSON数据
+     * Get JSON data from file. If JSON data miss then download from server.
      */
     static void getJSONData(){
         FileCacheUtil fileCacheUtil = new FileCacheUtil(FileCacheUtil.JSONPATH);
@@ -55,6 +56,7 @@ public class AsyncGetDataUtil {
 
     /**
      * 从文件中读JSON数据
+     * Get JSON from file
      */
     static String getJSONFromFile(){
         //TODO 数据量大的情况下需要分段加载缓存文件中的数据
@@ -67,7 +69,7 @@ public class AsyncGetDataUtil {
     }
 
     /**
-     * 从服务器端Get JSON数据
+     * Get JSON data from server
      */
     private static void getDataFromServer(){
         //开启一个新线程，从服务器端下载JSON数据
@@ -94,7 +96,7 @@ public class AsyncGetDataUtil {
 
 
     /**
-     * 解析JSON数据，picture部分不解析
+     * Decode JSON data，expect picture json data
      * @param jsonStr
      * @return  ArrayList<HashMap<String, Object>>
      */
@@ -117,8 +119,8 @@ public class AsyncGetDataUtil {
 
 
     /**
-     * 解析picture部分的JSON数据
-     * @param jsonStr 整个JSON字符串
+     * Decode picture json data
+     * @param jsonStr the picture json string data
      * @return  ArrayList<HashMap<String, Object>>
      */
     public static ArrayList<HashMap<String, Object>> decodeCrossPicturesJsonToPoint(String jsonStr)
@@ -140,7 +142,9 @@ public class AsyncGetDataUtil {
 
 
     /**
-     * 获取缓存的图片数据
+     * Get picture by picture ID and url
+     * @param id  picture ID
+     * @param url picture url
      */
     public static void getPictureData(String id, String url){
         FileCacheUtil fileCacheUtil = new FileCacheUtil(FileCacheUtil.PICTUREPATH);
@@ -169,7 +173,8 @@ public class AsyncGetDataUtil {
     }
 
     /**
-     * 按路径从文件中读图片
+     * Get photo by camera path
+     * @return bitmap the picture in CAMERAPATH folder
      */
     public static Bitmap getPhotoFromFile(){
         try {
@@ -181,8 +186,8 @@ public class AsyncGetDataUtil {
     }
 
     /**
-     * 判断超时的函数
-     * @param string 是一个包含时间的字符串
+     * Judge whether file is over time
+     * @param string a date time string
      * @return true or false
      */
     private static boolean overTime(String string) throws ParseException{
@@ -198,7 +203,7 @@ public class AsyncGetDataUtil {
     }
 
     /**
-     * 从服务器端Get JSON数据
+     * Get json data from server
      */
     private static void getPicFromServer(final String url, final String id){
         //开启一个新线程，从服务器端下载图片

@@ -57,7 +57,7 @@ public class MarkerPopupWindowView extends View{
     private static ImageView flagView;
 
     /**
-     * 构造函数
+     * Constructor
      * @param context the activity
      * @return string
      */
@@ -71,7 +71,7 @@ public class MarkerPopupWindowView extends View{
 
 
     /**
-     * closeButton 点击监听事件
+     * closeButton clickListener
      */
     @OnClick(R.id.id_close_popup)
     void onCloseButtonClick(){
@@ -94,7 +94,7 @@ public class MarkerPopupWindowView extends View{
 
 
     /**
-     * cameraView 点击监听事件
+     * cameraView clickListener
      */
     @OnClick(R.id.cameraButton)
     public void onCameraButtonClick(){
@@ -107,7 +107,7 @@ public class MarkerPopupWindowView extends View{
 
 
     /**
-     * 地图标注点 点击监听事件
+     * Map marker clickListener
      */
     @TargetApi(Build.VERSION_CODES.M)
     public void popupWindow(String name, String imgList) throws JSONException {
@@ -140,7 +140,7 @@ public class MarkerPopupWindowView extends View{
     }
 
     /**
-     * 图片点击事件
+     * Image clickListener.
      */
     public static class MyImgClickListener implements View.OnClickListener {
 
@@ -162,7 +162,7 @@ public class MarkerPopupWindowView extends View{
     }
 
     /**
-     * 删除已有的图片右上角标注
+     * Delete old selected flag.
      */
     private static void deleteOldSelected(){
         if(flagView != null) {
@@ -172,7 +172,7 @@ public class MarkerPopupWindowView extends View{
 
 
     /**
-     * 异步加载图片的内部类
+     * Asynchronously load image data.
      */
     public static class AsyncGetPicTask extends AsyncTask <Void, Void, Void>{
 

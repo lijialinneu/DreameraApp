@@ -9,21 +9,17 @@ import java.math.BigDecimal;
 
 
 /**
- * Created by lijialin on 16-3-7.
+ * Created by 10405 on 2016/07/03
  */
 public class ImgToolKits {
 
     public static int addHeight = 0;
 
     /**
-     * 改变图片大小
-     * 函数有BUG，测试东北大学建筑馆这个点，采用不旋转90度的方式，直接按照竖直图片放缩并提取边缘
-     * 发现边缘结果图不可描述的混乱
-     * 可能的原因是：数值计算、转换造成数据精度的丢失
-     * @author 10405
-     * @param bitmap 待处理的图片
-     * @param width 宽度
-     * @param height 高度
+     * Change bitmap size
+     * @param bitmap the picture needed to be changed
+     * @param width picture width
+     * @param height picture height
      */
     public static Bitmap changeBitmapSize(Bitmap bitmap, float width, float height) {
         float pw = width / (float) bitmap.getWidth();//pw 宽比
@@ -42,7 +38,7 @@ public class ImgToolKits {
 
 
     /**
-     * 自动生成边缘图
+     * Call canny function to create border picture
      */
     public static Bitmap getBorder(Bitmap srcb) {
         int width = srcb.getWidth();
@@ -59,10 +55,10 @@ public class ImgToolKits {
 
 
     /**
-     * 初始化边缘图
-     * @param bitmap 待处理图片
-     * @param width 目标宽度
-     * @param height 目标高度
+     * Init border picture
+     * @param bitmap the picture needed to be changed
+     * @param width picture width
+     * @param height picture height
      */
     public static Bitmap initBorderPic(Bitmap bitmap, float width, float height, boolean flag) {
 
@@ -79,10 +75,10 @@ public class ImgToolKits {
 
 
     /**
-     * 初始化边缘图，针对宽 > 高的图片
-     * @param width
-     * @param bitmap
-     * @param height
+     * Init border picture that width bigger than height
+     * @param bitmap the picture needed to be changed
+     * @param width picture width
+     * @param height picture width
      */
     public static Bitmap initBorderPic1(Bitmap bitmap, float width, float height, boolean flag) {
         float newHeight =  (width / bitmap.getWidth()) * bitmap.getHeight();// 保持原有比例下的新高度
@@ -112,10 +108,10 @@ public class ImgToolKits {
 
 
     /**
-     * 初始化边缘图，针对高 > 宽的图片
-     * @param width
-     * @param bitmap
-     * @param height
+     * Init border picture that width smaller than height
+     * @param bitmap the picture needed to be changed
+     * @param width picture width
+     * @param height picture width
      */
     public static Bitmap initBorderPic2(Bitmap bitmap, float width, float height, boolean flag) {
 

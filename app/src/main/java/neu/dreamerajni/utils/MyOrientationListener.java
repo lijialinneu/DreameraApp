@@ -2,6 +2,7 @@ package neu.dreamerajni.utils;
 
 /**
  * Created by 10405 on 2016/8/9.
+ * This class is used to get device's orientation.
  */
 
 
@@ -22,24 +23,26 @@ public class MyOrientationListener implements SensorEventListener{
         this.context = context;
     }
 
-    // 开始
+    /**
+     * Start to get orientation.
+     */
     public void start(){
         // 获得传感器管理器
-        sensorManager = (SensorManager) context
-                .getSystemService(Context.SENSOR_SERVICE);
+        sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
         if (sensorManager != null){
             // 获得方向传感器TYPE_ORIENTATION
             sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
         }
         // 注册
         if (sensor != null){//SensorManager.SENSOR_DELAY_UI
-            sensorManager.registerListener(this, sensor,
-                    SensorManager.SENSOR_DELAY_UI);
+            sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_UI);
         }
 
     }
 
-    // 停止检测
+    /**
+     * Stop to get orientation.
+     */
     public void stop(){
         sensorManager.unregisterListener(this);
     }

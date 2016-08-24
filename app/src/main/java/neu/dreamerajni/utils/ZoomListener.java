@@ -13,19 +13,15 @@ import android.view.WindowManager;
 
 /**
  * Created by lijialin on 16-3-9.
- * State pattern
+ * This class use state pattern to response users' gesture
  */
 
 
 public abstract class ZoomListener implements ScaleGestureDetector.OnScaleGestureListener,
         View.OnTouchListener {
 
-    private WindowManager wm;
-    private Context context;
-    private Bitmap bitmap;
     private int bitmapWidth;
     private int bitmapHeight;
-    private int screenWidth;
     private final int INIT = 0;        //初始状态
     private final int DRAG = 1;        //拖拽状态
     private final int ZOOM = 2;        //放缩状态
@@ -37,30 +33,20 @@ public abstract class ZoomListener implements ScaleGestureDetector.OnScaleGestur
     private Matrix saveMatrix = new Matrix(); // 保存的matrix
     PointF pA = new PointF();
     PointF pB = new PointF();
-    public static PointF mid = new PointF();
-    float dist = 1f;
+
+    private double rotation;
+    private static PointF mid = new PointF();
+    private float dist = 1f;
 
     /**
-     * 构造函数
+     * Constructor
      * @author 10405
      */
     public ZoomListener(Context context, Bitmap bitmap) {
-        this.context = context;
-        this.bitmap = bitmap;
         bitmapWidth = bitmap.getWidth();
         bitmapHeight = bitmap.getHeight();
         mScaleGestureDetector = new ScaleGestureDetector(context, this);
-        getScreenWidth();
-    }
-
-    /**
-     * 获取屏幕宽度
-     * @return
-     */
-    public int getScreenWidth() {
-        wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-        screenWidth = wm.getDefaultDisplay().getWidth(); //屏幕的宽度1080
-        return screenWidth;
+        APPUtils.getScreenWidth(context);
     }
 
 
@@ -87,30 +73,31 @@ public abstract class ZoomListener implements ScaleGestureDetector.OnScaleGestur
                     pB.set(event.getX(1), event.getY(1));
                     mid.set((event.getX(0) + event.getX(1)) / 2,
                             (event.getY(0) + event.getY(1)) / 2);
+                    //TODO 旋转不好使，所以设置mode为ZOOM
 //                    mode = ZOOM_OR_ROTATE;
                     mode = ZOOM;
                 }
                 break;
 
             case MotionEvent.ACTION_MOVE:
-//                if(mode == ZOOM_OR_ROTATE) {
-//                    PointF pC = new PointF(event.getX(1) - event.getX(0) + pA.x,
-//                            event.getY(1) - event.getY(0) + pA.y);
-//                    double a = spacing(pB.x, pB.y, pC.x, pC.y);
-//                    double b = spacing(pA.x, pA.y, pC.x, pC.y);
-//                    double c = spacing(pA.x, pA.y, pB.x, pB.y);
-//                    if (a >= 10) {
-//                        double cosB = (a * a + c * c - b * b) / (2 * a * c);
-//                        double angleB = Math.acos(cosB);
-//                        double PID4 = Math.PI / 4;
-//                        if (angleB > PID4 && angleB < 3 * PID4) {
-//                            mode = ROTATE;
-//                            rotation = 0;
-//                        } else {
-//                            mode = ZOOM;
-//                        }
-//                    }
-//                }
+                if(mode == ZOOM_OR_ROTATE) {
+                    PointF pC = new PointF(event.getX(1) - event.getX(0) + pA.x,
+                            event.getY(1) - event.getY(0) + pA.y);
+                    double a = spacing(pB.x, pB.y, pC.x, pC.y);
+                    double b = spacing(pA.x, pA.y, pC.x, pC.y);
+                    double c = spacing(pA.x, pA.y, pB.x, pB.y);
+                    if (a >= 10) {
+                        double cosB = (a * a + c * c - b * b) / (2 * a * c);
+                        double angleB = Math.acos(cosB);
+                        double PID4 = Math.PI / 4;
+                        if (angleB > PID4 && angleB < 3 * PID4) {
+                            mode = ROTATE;
+                            rotation = 0;
+                        } else {
+                            mode = ZOOM;
+                        }
+                    }
+                }
                 if(mode == DRAG){
                     mScaleMatrix.set(saveMatrix);
                     mScaleMatrix.postTranslate(event.getX()- pA.x, event.getY() - pA.y);// 平移
@@ -118,26 +105,26 @@ public abstract class ZoomListener implements ScaleGestureDetector.OnScaleGestur
                 } else if(mode == ZOOM) {
                     mScaleGestureDetector.onTouchEvent(event);
                 } else if(mode == ROTATE) {
-//                    PointF pC = new PointF(event.getX(1) - event.getX(0) + pA.x,
-//                            event.getY(1) - event.getY(0) + pA.y);
-//                    double a = spacing(pB.x, pB.y, pC.x, pC.y);
-//                    double b = spacing(pA.x, pA.y, pC.x, pC.y);
-//                    double c = spacing(pA.x, pA.y, pB.x, pB.y);
-//                    if (b > 10) {
-//                        double cosA = (b * b + c * c - a * a) / (2 * b * c);
-//                        double angleA = Math.acos(cosA);
-//                        double ta = pB.y - pA.y;
-//                        double tb = pA.x - pB.x;
-//                        double tc = pB.x * pA.y - pA.x * pB.y;
-//                        double td = ta * pC.x + tb * pC.y + tc;
-//                        if (td > 0) {
-//                            angleA = 2 * Math.PI - angleA;
-//                        }
-//                        rotation = angleA;
-//                        mScaleMatrix.set(saveMatrix);
-//                        mScaleMatrix.postRotate((float) (rotation * 180 / Math.PI), mid.x, mid.y);
-//                        zoom(mScaleMatrix);
-//                    }
+                    PointF pC = new PointF(event.getX(1) - event.getX(0) + pA.x,
+                            event.getY(1) - event.getY(0) + pA.y);
+                    double a = spacing(pB.x, pB.y, pC.x, pC.y);
+                    double b = spacing(pA.x, pA.y, pC.x, pC.y);
+                    double c = spacing(pA.x, pA.y, pB.x, pB.y);
+                    if (b > 10) {
+                        double cosA = (b * b + c * c - a * a) / (2 * b * c);
+                        double angleA = Math.acos(cosA);
+                        double ta = pB.y - pA.y;
+                        double tb = pA.x - pB.x;
+                        double tc = pB.x * pA.y - pA.x * pB.y;
+                        double td = ta * pC.x + tb * pC.y + tc;
+                        if (td > 0) {
+                            angleA = 2 * Math.PI - angleA;
+                        }
+                        rotation = angleA;
+                        mScaleMatrix.set(saveMatrix);
+                        mScaleMatrix.postRotate((float) (rotation * 180 / Math.PI), mid.x, mid.y);
+                        zoom(mScaleMatrix);
+                    }
                 }
                 break;
 
@@ -152,11 +139,11 @@ public abstract class ZoomListener implements ScaleGestureDetector.OnScaleGestur
     }
 
     /**
-     * 求两点的距离
-     * @param x1
-     * @param x2
-     * @param y1
-     * @param y2
+     * Calculate the space of point1 and point2
+     * @param x1 point1.x
+     * @param x2 point2.x
+     * @param y1 point1.y
+     * @param y2 point2.y
      */
     private float spacing(float x1, float y1, float x2, float y2) {
         float x = x1 - x2;
@@ -165,9 +152,8 @@ public abstract class ZoomListener implements ScaleGestureDetector.OnScaleGestur
     }
 
     /**
-     * 放缩函数，需要被override
-     * @author 10405
-     * @param matrix
+     * Zoom function,needed to be verride
+     * @param matrix zoom matrix
      */
     public abstract void zoom (Matrix matrix);
 
@@ -176,8 +162,8 @@ public abstract class ZoomListener implements ScaleGestureDetector.OnScaleGestur
         float scaleFactor = detector.getScaleFactor();
 
         //避免图片大于边界
-        if(bitmapWidth * scaleFactor >= screenWidth
-                || bitmapHeight * scaleFactor >= screenWidth) {
+        if(bitmapWidth * scaleFactor >= APPUtils.screenWidth
+                || bitmapHeight * scaleFactor >= APPUtils.screenWidth) {
             return true;
         }
         bitmapWidth *= scaleFactor;
