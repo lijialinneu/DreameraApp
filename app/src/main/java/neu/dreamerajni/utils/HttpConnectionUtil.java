@@ -39,7 +39,7 @@ public class HttpConnectionUtil {
     static final String PLACEURL = SERVERURL+"place/";
 
     /**
-     * 解析
+     * Decode http request parameters
      * @param paramMap
      * @return
      */
@@ -60,10 +60,10 @@ public class HttpConnectionUtil {
         }
     }
 
-    public static void doGet(String urlStr, Map<String,Object> paramMap) throws Exception{
+    static void doGet(String urlStr, Map<String, Object> paramMap) throws Exception{
         String paramStr = prepareParam(paramMap);
-        if(paramStr == null || paramStr.trim().length()<1){
-
+        if(paramStr.trim().length() < 1){
+            //pass
         }else{
             urlStr +="?"+paramStr;
         }
@@ -81,6 +81,12 @@ public class HttpConnectionUtil {
         }
     }
 
+
+    /**
+     * Change InputStream to steing
+     * @param conn HttUrlConnection
+     * @throws Exception
+     */
     private static void changeInputToString(HttpURLConnection conn) throws Exception{
         BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
         String line;
@@ -90,7 +96,14 @@ public class HttpConnectionUtil {
         br.close();
     }
 
-    public static void sendRequest(String urlStr, Map<String,Object> paramMap, String method) throws Exception{
+    /**
+     * Send request method
+     * @param urlStr
+     * @param paramMap
+     * @param method
+     * @throws Exception
+     */
+    private static void sendRequest(String urlStr, Map<String, Object> paramMap, String method) throws Exception{
         URL url = new URL(urlStr);
         HttpURLConnection conn = (HttpURLConnection)url.openConnection();
         conn.setRequestMethod(method);
@@ -125,14 +138,13 @@ public class HttpConnectionUtil {
         if(conn.getResponseCode() == 204){ //204 means server return nothing
             result = "success";
         }else{
-            System.out.println(conn.getResponseCode());
+//            System.out.println(conn.getResponseCode());
         }
     }
 
 
     /**
      * 检查当前网络是否可用
-     *
      * @param activity
      * @return true or false
      */
