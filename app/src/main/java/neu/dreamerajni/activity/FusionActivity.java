@@ -166,7 +166,7 @@ public class FusionActivity extends AppCompatActivity  {
         yOffset = wmParams.y + topw;
         wmParams.width = copyPicFromFile.getWidth();
         wmParams.height = copyPicFromFile.getHeight();
-        wmParams.flags = FLAG_NOT_TOUCHABLE | FLAG_LAYOUT_NO_LIMITS;
+        wmParams.flags = FLAG_NOT_TOUCHABLE;
 
         ViewGroup parent = (ViewGroup) oldPictureView.getParent();
         if (parent != null) {

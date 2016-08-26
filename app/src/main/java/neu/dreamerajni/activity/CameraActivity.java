@@ -69,12 +69,11 @@ public class CameraActivity extends AppCompatActivity implements
     private SurfaceHolder surfaceHolder;
     private int zoom = 0;                //相机焦距
     private Bitmap borderBitmap;         //边缘图
-    private WindowManager.LayoutParams wmParams;
     private Matrix lastMatrix = new Matrix();  //初始化变换矩阵
     private  Canvas canvas;
 
     /**
-     * 一个静态函数，用于处理activity之间的参数传递
+     * A static function，used to pass parameter from the last activity\.
      */
     public static void startCameraFromLocation(int[] startingLocation,
                                                Activity startingActivity, String id) {
@@ -125,7 +124,7 @@ public class CameraActivity extends AppCompatActivity implements
         super.onPause();
         cameraView.onPause();
         // 为了避免onPause后转偏旋转90度
-        this.finish(); //强制退出
+        this.finish(); //force quit
     }
 
     @Override
@@ -157,7 +156,7 @@ public class CameraActivity extends AppCompatActivity implements
     }
 
     /**
-     * 相机预览界面缩小
+     * Zoom in the camera preview
      */
     @OnClick(R.id.smaller)
     void onZoomSmaller(){
@@ -173,7 +172,7 @@ public class CameraActivity extends AppCompatActivity implements
 
 
     /**
-     * 相机预览界面放大（也就是焦距变大？）
+     * Zoom out the camera preview
      */
     @OnClick(R.id.bigger)
     void onZoomBigger(){
@@ -198,28 +197,8 @@ public class CameraActivity extends AppCompatActivity implements
 
         borderBitmap = ImgToolKits.initBorderPic(picFromFile,
                APPUtils.screenWidth , APPUtils.screenWidth, true);
-
-        addSurfaceView();
-
-        cameraView.autoFocus();
-        cameraView.setOnTouchListener(new ZoomListener(this, borderBitmap) { //触摸监听
-
-            @Override
-            public void zoom(Matrix matrix) {
-                surfaceView.setBackgroundResource(0); //删除背景
-                canvas = surfaceHolder.lockCanvas();
-                canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-                canvas.drawBitmap(borderBitmap, matrix, null);
-
-                surfaceHolder.unlockCanvasAndPost(canvas);
-                surfaceHolder.setFormat(PixelFormat.TRANSPARENT); //设置背景透明
-                surfaceHolder.lockCanvas(new Rect(0, 0, 0, 0));
-                surfaceHolder.unlockCanvasAndPost(canvas);
-                canvas.save();
-
-                lastMatrix.set(matrix);
-            }
-        });
+        addSurfaceView();  //添加surfaceView
+        cameraViewOnTouch(); // 设置cameraView的监听事件
     }
 
     /**
@@ -241,7 +220,7 @@ public class CameraActivity extends AppCompatActivity implements
             }
         });
 
-        wmParams = new WindowManager.LayoutParams();
+        WindowManager.LayoutParams wmParams = new WindowManager.LayoutParams();
         wmParams.width = borderBitmap.getWidth();
         wmParams.height = borderBitmap.getHeight();
         wmParams.flags = FLAG_NOT_TOUCHABLE;
@@ -250,6 +229,30 @@ public class CameraActivity extends AppCompatActivity implements
             parent.removeAllViews();
         }
         APPUtils.wm.addView(surfaceView, wmParams);
+    }
+
+    /**
+     * cameraViewOnTouch();
+     */
+    void cameraViewOnTouch() {
+        cameraView.autoFocus();
+        cameraView.setOnTouchListener(new ZoomListener(this, borderBitmap) { //触摸监听
+            @Override
+            public void zoom(Matrix matrix) {
+                surfaceView.setBackgroundResource(0); //删除背景
+                canvas = surfaceHolder.lockCanvas();
+                canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+                canvas.drawBitmap(borderBitmap, matrix, null);
+
+                surfaceHolder.unlockCanvasAndPost(canvas);
+                surfaceHolder.setFormat(PixelFormat.TRANSPARENT); //设置背景透明
+                surfaceHolder.lockCanvas(new Rect(0, 0, 0, 0));
+                surfaceHolder.unlockCanvasAndPost(canvas);
+                canvas.save();
+
+                lastMatrix.set(matrix);
+            }
+        });
     }
 
     @Override
@@ -290,7 +293,7 @@ public class CameraActivity extends AppCompatActivity implements
 
 
     /**
-     * 存储照片
+     * Save photo to file by path
      */
     private void saveImageToFile ( byte[] image) {
         String path = FileCacheUtil.CAMERAPATH; //存储JSON的路径
@@ -314,7 +317,7 @@ public class CameraActivity extends AppCompatActivity implements
     }
 
     /**
-     * 跳转到FusionActivity
+     * Got fusion activity
      */
     private void gotoFusionActivity() {
         //跳转到下一个Activity
