@@ -78,9 +78,6 @@
             android:theme="@style/AppTheme" />
         <activity android:name=".activity.FusionActivity" />
         <activity android:name=".activity.FilterActivity" />
-        <activity android:name=".activity.EraseActivity" />
-        <activity android:name=".activity.CityActivity" />
-        <activity android:name=".activity.TestActivity"></activity>
     </application>
 
 </manifest>

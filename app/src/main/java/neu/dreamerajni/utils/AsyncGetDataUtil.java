@@ -109,6 +109,10 @@ public class AsyncGetDataUtil {
             JSONObject jsonObject = jsonArray.getJSONObject(i);
             HashMap<String, Object> map = new HashMap();
             map.put("name", jsonObject.getString("name"));
+
+            //TODO 替换为point的文字介绍
+            map.put("text", "此处是point的文字介绍");
+
             map.put("longitude", jsonObject.getString("longitude"));
             map.put("latitude", jsonObject.getString("latitude"));
             map.put("cross_pictures", jsonObject.getString("cross_pictures"));
@@ -132,6 +136,7 @@ public class AsyncGetDataUtil {
             final HashMap<String, Object> map = new HashMap();
             map.put("id", jsonObject.getString("id"));
             map.put("url", jsonObject.getString("picture"));
+            map.put("detail_title", jsonObject.getString("detail_title"));
             String year = jsonObject.getString("datetime").substring(0,4);//截取datetime中的year
             map.put("date", year);
             list.add(map);

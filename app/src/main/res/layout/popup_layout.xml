@@ -68,11 +68,17 @@
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true">
 
-            <!--<TextView-->
-                <!--android:id="@+id/id_marker_title"-->
-                <!--android:layout_width="wrap_content"-->
-                <!--android:layout_height="wrap_content"-->
-                <!--android:textColor="#FFF5EB" />-->
+            <TextView
+                android:id="@+id/id_picture_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#FFF5EB" />
+
+            <TextView
+                android:id="@+id/id_point_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#FFF5EB" />
 
             <android.support.design.widget.FloatingActionButton
                 android:id="@+id/cameraButton"

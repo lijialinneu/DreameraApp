@@ -212,6 +212,7 @@ public class BMapControlUtil {
             try {
                 markerPopupWindowView.popupWindow(
                         (String) marker.getExtraInfo().get("name"),
+                        (String) marker.getExtraInfo().get("text"),
                         (String) marker.getExtraInfo().get("cross_pictures")
                 );// 弹出InfoWindow
 
@@ -288,6 +289,7 @@ public class BMapControlUtil {
             //绑定marker的数据
             Bundle bundle = new Bundle();
             bundle.putSerializable("name", item.get("name").toString());
+            bundle.putSerializable("text", item.get("text").toString());
             bundle.putSerializable("cross_pictures", item.get("cross_pictures").toString());
             marker.setExtraInfo(bundle);
         }

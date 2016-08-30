@@ -47,12 +47,15 @@ public class MarkerPopupWindowView extends View{
     LinearLayout markerInfoLy;    // 地图弹出窗口
     @Bind(R.id.id_marker_name)
     TextView nameView;            //弹出窗口中的名字
+    @Bind(R.id.id_point_text)
+    TextView pointTextView;       //point的文字介绍
 
     private static FloatingActionButton cameraButton;
     private static RecyclerView gallery;
     private static String intentPID; // 图片的ID作为参数传递到CameraActivity
 
     public Activity activity;
+    private static TextView pictureTitleView;  //picture的title文字介绍
     private boolean NEVERPOPUP = true;
     private static ImageView flagView;
 
@@ -65,6 +68,7 @@ public class MarkerPopupWindowView extends View{
         super(context);
         this.activity = (Activity) context;
         ButterKnife.bind(this, activity);
+        pictureTitleView = (TextView) activity.findViewById(R.id.id_picture_title);
         cameraButton = (FloatingActionButton) activity.findViewById(R.id.cameraButton);
         gallery = (RecyclerView) activity.findViewById(R.id.id_gallery);
     }
@@ -89,6 +93,7 @@ public class MarkerPopupWindowView extends View{
 
         markerInfoLy.setVisibility(View.GONE);
         cameraButton.setVisibility(INVISIBLE);
+        pictureTitleView.setVisibility(GONE);
         NEVERPOPUP = true;
     }
 
@@ -110,7 +115,7 @@ public class MarkerPopupWindowView extends View{
      * Map marker clickListener
      */
     @TargetApi(Build.VERSION_CODES.M)
-    public void popupWindow(String name, String imgList) throws JSONException {
+    public void popupWindow(String name, String text, String imgList) throws JSONException {
         cameraButton.setVisibility(INVISIBLE);
         if(NEVERPOPUP) {
             TranslateAnimation mShowAction = new TranslateAnimation(Animation.RELATIVE_TO_SELF, 0.0f,
@@ -128,6 +133,7 @@ public class MarkerPopupWindowView extends View{
             gallery.setVisibility(GONE);
         } else {
             nameView.setText(name);
+            pointTextView.setText(text); //设置point的文字介绍
             final ArrayList<HashMap<String, Object>> picList =
                     AsyncGetDataUtil.decodeCrossPicturesJsonToPoint(imgList);//解析JSON数据
             PhotoListAdapter photoListAdapter = new PhotoListAdapter(activity, picList);
@@ -145,19 +151,28 @@ public class MarkerPopupWindowView extends View{
     public static class MyImgClickListener implements View.OnClickListener {
 
         private String pictureId;
+        private String detail_title;
 
-        public MyImgClickListener(String pictureId){
+        public MyImgClickListener(String pictureId, String detail_title){
             this.pictureId = pictureId;
+            this.detail_title = detail_title;
         }
 
         @Override
         public void onClick(View v) {
             deleteOldSelected();       // 清除以前选中图片的对号小图标
+            pictureTitleView.setVisibility(GONE);
+
             int i =  (int) v.getTag(); // 显示对号小图标
             flagView = (ImageView) gallery.findViewWithTag(i + "a");
             flagView.setVisibility(VISIBLE);
             cameraButton.setVisibility(View.VISIBLE);
             intentPID = pictureId;     //设置Activity间传递的参数
+
+            if(!detail_title.equals("")) {
+                pictureTitleView.setVisibility(VISIBLE);
+                pictureTitleView.setText(detail_title);
+            }
         }
     }
 

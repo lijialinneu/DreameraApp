@@ -6,16 +6,9 @@
     <color name="colorBanner">#FFFFFF</color>
 
 
-    <color name="popupWindow">#CC4e5a6b</color>
 
     <!-- add on 2016-06-14 by 10405 -->
     <color name="btn_default_light_normal">#00000000</color>
     <color name="btn_default_light_pressed">#40ffffff</color>
-
-    <!-- add on 2016-06-14 by 10405 -->
-    <color name="black_overlay">#66000000</color>
-    <color name="black">#FF16181a</color>
-    <color name="bg_blue">#00a1e5</color>
-
 
 </resources>

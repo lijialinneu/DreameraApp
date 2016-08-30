@@ -55,7 +55,9 @@ public class PhotoListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             holder.imgView.setTag(position);       //设置tag
             holder.selectImgView.setImageResource(R.mipmap.ic_selected); //设置选中的对号图片
             holder.selectImgView.setTag(position + "a");
-            holder.imgView.setOnClickListener(new MyImgClickListener(pictureId));
+
+            String detail_title = picList.get(position).get("detail_title").toString();
+            holder.imgView.setOnClickListener(new MyImgClickListener(pictureId, detail_title));
 
             AsyncGetPicTask asyncGetPicTask = new AsyncGetPicTask(holder.imgView, pictureUrl, pictureId);
             asyncGetPicTask.execute();

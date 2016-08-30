@@ -58,7 +58,6 @@ public class FusionActivity extends AppCompatActivity  {
     @Bind(R.id.btnNextActivity)
     ImageButton nextButton;
 
-//    private WindowManager wm;
     private String id;                           //图片的id
     private Matrix matrix = new Matrix();        //前一个Activity传回的矩阵参数
     private float[] matrixValues = new float[9]; //用于获取矩阵的参数
@@ -67,7 +66,6 @@ public class FusionActivity extends AppCompatActivity  {
     private SurfaceView oldPictureView; //显示老照片的SurfaceView
     private int left = 0;               //老照片的left
     private int top = 0;                //老照片的top
-//    private float screenWidth = 0;      //屏幕宽度，相机预览画面的宽度与屏幕的宽度相等
     private Bitmap maskBitmap;          //遮罩mask处理
     private Bitmap resultBitmap;        //最终结果图片
     private int xOffset = 0;            //悬浮窗中图片的x偏移量

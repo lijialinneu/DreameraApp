@@ -3,9 +3,16 @@ package neu.dreamerajni.utils;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Point;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Build;
 import android.view.Display;
+import android.view.KeyEvent;
+import android.view.SurfaceView;
+import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
+
+import static android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE;
 
 /**
  * Created by 10405 on 2016/08/24.
