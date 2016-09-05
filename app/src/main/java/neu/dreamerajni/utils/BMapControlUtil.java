@@ -266,6 +266,11 @@ public class BMapControlUtil {
 
             //在地图上添加标注点marker
             HashMap<String, Object> item = pointList.get(i);
+
+            if(item.get("cross_pictures").equals("[]")) {
+               continue;
+            }
+
             LatLng latLngMarker = new LatLng(
                     Double.parseDouble(item.get("latitude").toString()),
                     Double.parseDouble(item.get("longitude").toString())
