@@ -10,20 +10,16 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import com.baidu.mapapi.SDKInitializer;
-
-import java.lang.reflect.Method;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import neu.dreamerajni.R;
 import neu.dreamerajni.utils.APPUtils;
 import neu.dreamerajni.utils.BMapControlUtil;
-import neu.dreamerajni.view.OldMapPopupView;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -106,19 +102,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void setIconsVisible(Menu menu, boolean flag) {
-        //判断menu是否为空
-        if(menu != null) {
-            try {
-                //如果不为空,就反射拿到menu的setOptionalIconsVisible方法
-                Method method = menu.getClass().getDeclaredMethod("setOptionalIconsVisible", Boolean.TYPE);
-                //暴力访问该方法
-                method.setAccessible(true);
-                //调用该方法显示icon
-                method.invoke(menu, flag);
-            } catch (Exception e) {
-            e.printStackTrace();
-        }
-        }
+
     }
 
     @Override
@@ -126,18 +110,6 @@ public class MainActivity extends AppCompatActivity
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-//        if (id == R.id.action_settings) {
-//            return true;
-//        }
-        if (id == R.id.action_map) {
-            setOldMap();
-            return true;
-        } else if(id == R.id.action_clear_map) {
-            clearOldMap();
-        }
 
         return super.onOptionsItemSelected(item);
     }
@@ -167,21 +139,6 @@ public class MainActivity extends AppCompatActivity
             drawer.closeDrawer(GravityCompat.START);
         }
         return true;
-    }
-
-    private void setOldMap() {
-        oldMapLayout.setVisibility(View.VISIBLE);
-        OldMapPopupView oldMapPopupView = new OldMapPopupView(this, bMapControlUtil);
-    }
-
-    private void clearOldMap() {
-        if(bMapControlUtil.oldMapOverlay != null) {
-            bMapControlUtil.oldMapOverlay.remove();
-            bMapControlUtil.bdGround.recycle();
-            bMapControlUtil.bdGround = null;
-            bMapControlUtil.oldMapOverlay = null;
-            System.gc();
-        }
     }
 
     @Override

@@ -69,16 +69,6 @@ public class BMapControlUtil {
     public MyOrientationListener myOrientationListener;      //方向传感器的监听器
 
     /**
-     * The variable below is related to old map.
-     */
-    public GroundOverlay oldMapOverlay;
-    private LatLng southwest;
-    private LatLng northeast;
-    private LatLngBounds bounds;
-    public BitmapDescriptor bdGround;
-    private OverlayOptions ooGround;
-
-    /**
      * The variable below is related to maker cluster on bmap
      */
     public ClusterManager clusterManager;
@@ -106,7 +96,6 @@ public class BMapControlUtil {
         baiduMap = mapView.getMap();
 
         baiduMap.setOnMapLoadedCallback(callBackHandler);
-//        baiduMap.setOnMarkerClickListener(markerClickHandler);
 
         clusterManager = new ClusterManager<MyItem>(activity, baiduMap);
         initMarker();//初始化地图标注点
@@ -216,37 +205,6 @@ public class BMapControlUtil {
     };
 
     /**
-     * Marker clickListener
-     */
-//    OnMarkerClickListener markerClickHandler = new OnMarkerClickListener() {
-//
-//        @Override
-//        public boolean onMarkerClick(final Marker marker) {
-//
-//            System.out.println("asdf  click marker");
-//            try {
-//                markerPopupWindowView.popupWindow(
-//                        (String) marker.getExtraInfo().get("name"),
-//                        (String) marker.getExtraInfo().get("text"),
-//                        (String) marker.getExtraInfo().get("cross_pictures")
-//                );// 弹出InfoWindow
-//
-//                RelativeLayout.LayoutParams mapParams =
-//                        (RelativeLayout.LayoutParams) map.getLayoutParams();
-//                mapParams.addRule(RelativeLayout.ABOVE, R.id.id_marker_info);
-//                map.setLayoutParams(mapParams);
-//
-//            } catch (JSONException e) {
-//                e.printStackTrace();
-//            }
-//            return true;
-//        }
-//    };
-
-
-
-
-    /**
      * Initialize marker clickerListener
      * Call addMarker function.
      */
@@ -294,33 +252,11 @@ public class BMapControlUtil {
             );// 标注点的经纬度
 
             items.add(new MyItem(
-//                    markerPopupWindowView,
                     latLngMarker,
                     item.get("name").toString(),
                     item.get("text").toString(),
                     item.get("cross_pictures").toString()
             ));
-
-//            BitmapDescriptor mIconMaker = BitmapDescriptorFactory.fromResource(R.mipmap.ic_marker);
-//            OverlayOptions overlayOptions = new MarkerOptions()//添加图片标注
-//                    .position(latLngMarker)
-//                    .icon(mIconMaker)
-//                    .zIndex(5);// 图标
-//            Marker marker = (Marker) (baiduMap.addOverlay(overlayOptions));
-//            OverlayOptions textOption = new TextOptions()//添加文字标注
-//                    .position(latLngMarker)
-//                    .text(item.get("name").toString())
-//                    .fontSize(42)
-//                    .fontColor(Color.rgb(0, 150, 64));
-//            baiduMap.addOverlay(textOption);
-//
-//            //绑定marker的数据
-//            Bundle bundle = new Bundle();
-//            bundle.putSerializable("name", item.get("name").toString());
-//            bundle.putSerializable("text", item.get("text").toString());
-//            bundle.putSerializable("cross_pictures", item.get("cross_pictures").toString());
-//            marker.setExtraInfo(bundle);
-
         }
 
         clusterManager.addItems(items);
@@ -328,61 +264,9 @@ public class BMapControlUtil {
 
 
     /**
-     *  This function is used to show old map.
-     *  The code needed to be changed
-     */
-    public void addOldMapOverlay(int progress) {
-
-        if(oldMapOverlay != null) {
-            oldMapOverlay.remove();
-            bdGround.recycle();
-            bdGround = null;
-            oldMapOverlay = null;
-            System.gc();
-        }
-
-        //定义Ground的显示地理范围
-        northeast = new LatLng(41.755163,123.489881);
-        southwest = new LatLng(41.807449,123.400122);
-
-        //定义Ground显示的图片
-        if(progress == 0) {
-            bdGround = BitmapDescriptorFactory.fromResource(R.mipmap.map1);
-            northeast = new LatLng(41.83242,123.488156); //Override northeast above
-            southwest = new LatLng(41.782737,123.431634);//Override southeast above
-        } else if(progress == 1) {
-            bdGround = BitmapDescriptorFactory.fromResource(R.mipmap.map2);
-            northeast = new LatLng(41.838708,123.490671);
-            southwest = new LatLng(41.782441,123.382227);
-        } else if(progress == 2) {
-            bdGround = BitmapDescriptorFactory.fromResource(R.mipmap.map3);
-        } else if(progress == 3) {
-            bdGround = BitmapDescriptorFactory.fromResource(R.mipmap.map4);
-        } else {
-            bdGround = BitmapDescriptorFactory.fromResource(R.mipmap.map5);
-        }
-
-        bounds = new LatLngBounds.Builder()
-                .include(northeast)
-                .include(southwest)
-                .build();
-
-        //定义Ground覆盖物选项
-        ooGround = new GroundOverlayOptions()
-                .positionFromBounds(bounds)
-                .image(bdGround);
-
-        //在地图中添加Ground覆盖物
-        oldMapOverlay = (GroundOverlay)  baiduMap.addOverlay(ooGround);
-    }
-
-
-    /**
      * 每个Marker点，包含Marker点坐标以及图标
      */
     public class MyItem implements ClusterItem {
-
-//        private MarkerPopupWindowView markerPopupWindowView;     //底部弹窗
 
         private final LatLng mPosition;
         private String name;
