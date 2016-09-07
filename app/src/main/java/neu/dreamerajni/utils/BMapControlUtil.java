@@ -107,10 +107,10 @@ public class BMapControlUtil {
 
         baiduMap.setOnMapLoadedCallback(callBackHandler);
 //        baiduMap.setOnMarkerClickListener(markerClickHandler);
-
+        
         clusterManager = new ClusterManager<MyItem>(activity, baiduMap);
         initMarker();//初始化地图标注点
-        
+
         // 设置地图监听，当地图状态发生改变时，进行点聚合运算
         baiduMap.setOnMapStatusChangeListener(clusterManager);
         baiduMap.setOnMarkerClickListener(clusterManager);
