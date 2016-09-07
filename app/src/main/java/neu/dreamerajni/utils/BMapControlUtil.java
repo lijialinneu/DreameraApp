@@ -34,10 +34,14 @@ import org.json.JSONException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import neu.dreamerajni.R;
+import neu.dreamerajni.utils.clustering.Cluster;
+import neu.dreamerajni.utils.clustering.ClusterItem;
+import neu.dreamerajni.utils.clustering.ClusterManager;
 import neu.dreamerajni.view.MarkerPopupWindowView;
 import neu.dreamerajni.utils.MyOrientationListener.OnOrientationListener;
 
@@ -53,7 +57,7 @@ public class BMapControlUtil {
 
     public Activity activity;                                //调用BmMap控件的Activity
     public BaiduMap baiduMap;                                //地图实例
-    private MarkerPopupWindowView markerPopupWindowView;     //底部弹窗
+    public static MarkerPopupWindowView markerPopupWindowView;     //底部弹窗
     public static RelativeLayout map;                        //地图的容器
     private boolean isFristLocation = true;                  //第一次定位
     private LocationMode mCurrentMode = LocationMode.NORMAL;  //定位模式
@@ -73,6 +77,11 @@ public class BMapControlUtil {
     private LatLngBounds bounds;
     public BitmapDescriptor bdGround;
     private OverlayOptions ooGround;
+
+    /**
+     * The variable below is related to maker cluster on bmap
+     */
+    public ClusterManager clusterManager;
 
 
     /**
@@ -97,10 +106,14 @@ public class BMapControlUtil {
         baiduMap = mapView.getMap();
 
         baiduMap.setOnMapLoadedCallback(callBackHandler);
-        baiduMap.setOnMarkerClickListener(markerClickHandler);
+//        baiduMap.setOnMarkerClickListener(markerClickHandler);
 
+        clusterManager = new ClusterManager<MyItem>(activity, baiduMap);
         initMarker();//初始化地图标注点
-
+        
+        // 设置地图监听，当地图状态发生改变时，进行点聚合运算
+        baiduMap.setOnMapStatusChangeListener(clusterManager);
+        baiduMap.setOnMarkerClickListener(clusterManager);
     }
 
 
@@ -118,7 +131,6 @@ public class BMapControlUtil {
         option.setCoorType("bd09ll"); // 设置坐标类型
         option.setScanSpan(10000);
         mLocationClient.setLocOption(option);
-
     }
 
     /**
@@ -133,10 +145,10 @@ public class BMapControlUtil {
             }
             // 构造定位数据
             MyLocationData locData = new MyLocationData.Builder()
-                    .accuracy(location.getRadius())
-                    // 此处设置开发者获取到的方向信息，顺时针0-360
-                    .direction(mXDirection).latitude(location.getLatitude())
-                    .longitude(location.getLongitude()).build();
+                .accuracy(location.getRadius())
+                // 此处设置开发者获取到的方向信息，顺时针0-360
+                .direction(mXDirection).latitude(location.getLatitude())
+                .longitude(location.getLongitude()).build();
             mCurrentAccracy = location.getRadius();
 
 //            System.out.println("asdf error code"+location.getLocType());
@@ -157,25 +169,24 @@ public class BMapControlUtil {
      */
     private void initOritationListener(){
         myOrientationListener = new MyOrientationListener(activity);
-        myOrientationListener
-                .setOnOrientationListener(new OnOrientationListener() {
-                    @Override
-                    public void onOrientationChanged(float x) {
-                        mXDirection = (int) x;
-                        // 构造定位数据
-                        MyLocationData locData = new MyLocationData.Builder()
-                                .accuracy(mCurrentAccracy)
-                                // 此处设置开发者获取到的方向信息，顺时针0-360
-                                .direction(mXDirection)
-                                .latitude(mCurrentLantitude)
-                                .longitude(mCurrentLongitude).build();
-                        baiduMap.setMyLocationData(locData);// 设置定位数据
-                        BitmapDescriptor mCurrentMarker = null;// 设置自定义图标
-                        MyLocationConfiguration config = new MyLocationConfiguration(
-                                mCurrentMode, true, mCurrentMarker);
-                        baiduMap.setMyLocationConfigeration(config);
-                    }
-                });
+        myOrientationListener.setOnOrientationListener(new OnOrientationListener() {
+            @Override
+            public void onOrientationChanged(float x) {
+                mXDirection = (int) x;
+                // 构造定位数据
+                MyLocationData locData = new MyLocationData.Builder()
+                    .accuracy(mCurrentAccracy)
+                    // 此处设置开发者获取到的方向信息，顺时针0-360
+                    .direction(mXDirection)
+                    .latitude(mCurrentLantitude)
+                    .longitude(mCurrentLongitude).build();
+                baiduMap.setMyLocationData(locData);// 设置定位数据
+                BitmapDescriptor mCurrentMarker = null;// 设置自定义图标
+                MyLocationConfiguration config = new MyLocationConfiguration(
+                        mCurrentMode, true, mCurrentMarker);
+                baiduMap.setMyLocationConfigeration(config);
+            }
+        });
     }
 
 
@@ -183,50 +194,56 @@ public class BMapControlUtil {
      * Map call back
      */
     OnMapLoadedCallback callBackHandler  = new OnMapLoadedCallback() {//回调函数
-            @Override
-            public void onMapLoaded() {
-                LatLng northeast = new LatLng(41.94892,123.725236); //东北角
-                LatLng southwest = new LatLng(41.618652,123.161532); //西南角
-                //设置地图显示范围
-                baiduMap.setMapStatusLimits(
-                        new LatLngBounds.Builder().include(northeast).include(southwest).build()
-                );
-                baiduMap.setMapStatus(MapStatusUpdateFactory.newMapStatus(
-                        new MapStatus.Builder().zoom(18).build()
-                ));
-                if (isFristLocation){                // 第一次定位时，将地图位置移动到当前位置
-                    isFristLocation = false;
-                    LatLng ll = new LatLng(mCurrentLantitude, mCurrentLongitude);
-                    MapStatusUpdate u = MapStatusUpdateFactory.newLatLng(ll);
-                    baiduMap.animateMapStatus(u);
-                }
+
+        @Override
+        public void onMapLoaded() {
+//            LatLng northeast = new LatLng(41.94892,123.725236); //东北角
+//            LatLng southwest = new LatLng(41.618652,123.161532); //西南角
+//            //设置地图显示范围
+//            baiduMap.setMapStatusLimits(
+//                    new LatLngBounds.Builder().include(northeast).include(southwest).build()
+//            );
+            baiduMap.setMapStatus(MapStatusUpdateFactory.newMapStatus(
+                    new MapStatus.Builder().zoom(18).build()
+            ));
+            if (isFristLocation){                // 第一次定位时，将地图位置移动到当前位置
+                isFristLocation = false;
+                LatLng ll = new LatLng(mCurrentLantitude, mCurrentLongitude);
+                MapStatusUpdate u = MapStatusUpdateFactory.newLatLng(ll);
+                baiduMap.animateMapStatus(u);
             }
+        }
     };
 
     /**
      * Marker clickListener
      */
-    OnMarkerClickListener markerClickHandler = new OnMarkerClickListener() {
-        @Override
-        public boolean onMarkerClick(final Marker marker){
-            try {
-                markerPopupWindowView.popupWindow(
-                        (String) marker.getExtraInfo().get("name"),
-                        (String) marker.getExtraInfo().get("text"),
-                        (String) marker.getExtraInfo().get("cross_pictures")
-                );// 弹出InfoWindow
+//    OnMarkerClickListener markerClickHandler = new OnMarkerClickListener() {
+//
+//        @Override
+//        public boolean onMarkerClick(final Marker marker) {
+//
+//            System.out.println("asdf  click marker");
+//            try {
+//                markerPopupWindowView.popupWindow(
+//                        (String) marker.getExtraInfo().get("name"),
+//                        (String) marker.getExtraInfo().get("text"),
+//                        (String) marker.getExtraInfo().get("cross_pictures")
+//                );// 弹出InfoWindow
+//
+//                RelativeLayout.LayoutParams mapParams =
+//                        (RelativeLayout.LayoutParams) map.getLayoutParams();
+//                mapParams.addRule(RelativeLayout.ABOVE, R.id.id_marker_info);
+//                map.setLayoutParams(mapParams);
+//
+//            } catch (JSONException e) {
+//                e.printStackTrace();
+//            }
+//            return true;
+//        }
+//    };
 
-                RelativeLayout.LayoutParams mapParams =
-                        (RelativeLayout.LayoutParams) map.getLayoutParams();
-                mapParams.addRule(RelativeLayout.ABOVE, R.id.id_marker_info);
-                map.setLayoutParams(mapParams);
 
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            return true;
-        }
-    };
 
 
     /**
@@ -236,7 +253,7 @@ public class BMapControlUtil {
     public void initMarker() {
         AsyncGetDataUtil.getJSONData();//准备好加载的数据
         String jsonFromFile = null;
-        while(jsonFromFile == null){
+        while(jsonFromFile == null) {
             try {
                 Thread.sleep(500);
             } catch (InterruptedException e) {
@@ -260,9 +277,9 @@ public class BMapControlUtil {
             e.printStackTrace();
         }
 
-//        List<MyItem> items = new ArrayList<MyItem>();
+        List<MyItem> items = new ArrayList<MyItem>();
 
-        for(int i = 0; i < pointList.size(); i++){
+        for(int i = 0; i < pointList.size(); i++) {
 
             //在地图上添加标注点marker
             HashMap<String, Object> item = pointList.get(i);
@@ -276,30 +293,37 @@ public class BMapControlUtil {
                     Double.parseDouble(item.get("longitude").toString())
             );// 标注点的经纬度
 
-//            items.add(new MyItem(latLngMarker));
+            items.add(new MyItem(
+//                    markerPopupWindowView,
+                    latLngMarker,
+                    item.get("name").toString(),
+                    item.get("text").toString(),
+                    item.get("cross_pictures").toString()
+            ));
 
-            BitmapDescriptor mIconMaker = BitmapDescriptorFactory.fromResource(R.mipmap.ic_marker);
-            OverlayOptions overlayOptions = new MarkerOptions()//添加图片标注
-                    .position(latLngMarker)
-                    .icon(mIconMaker)
-                    .zIndex(5);// 图标
-            Marker marker = (Marker) (baiduMap.addOverlay(overlayOptions));
-            OverlayOptions textOption = new TextOptions()//添加文字标注
-                    .position(latLngMarker)
-                    .text(item.get("name").toString())
-                    .fontSize(42)
-                    .fontColor(Color.rgb(0, 150, 64));
-            baiduMap.addOverlay(textOption);
+//            BitmapDescriptor mIconMaker = BitmapDescriptorFactory.fromResource(R.mipmap.ic_marker);
+//            OverlayOptions overlayOptions = new MarkerOptions()//添加图片标注
+//                    .position(latLngMarker)
+//                    .icon(mIconMaker)
+//                    .zIndex(5);// 图标
+//            Marker marker = (Marker) (baiduMap.addOverlay(overlayOptions));
+//            OverlayOptions textOption = new TextOptions()//添加文字标注
+//                    .position(latLngMarker)
+//                    .text(item.get("name").toString())
+//                    .fontSize(42)
+//                    .fontColor(Color.rgb(0, 150, 64));
+//            baiduMap.addOverlay(textOption);
+//
+//            //绑定marker的数据
+//            Bundle bundle = new Bundle();
+//            bundle.putSerializable("name", item.get("name").toString());
+//            bundle.putSerializable("text", item.get("text").toString());
+//            bundle.putSerializable("cross_pictures", item.get("cross_pictures").toString());
+//            marker.setExtraInfo(bundle);
 
-            //绑定marker的数据
-            Bundle bundle = new Bundle();
-            bundle.putSerializable("name", item.get("name").toString());
-            bundle.putSerializable("text", item.get("text").toString());
-            bundle.putSerializable("cross_pictures", item.get("cross_pictures").toString());
-            marker.setExtraInfo(bundle);
         }
 
-//        clusterManager.addItems(items);
+        clusterManager.addItems(items);
     }
 
 
@@ -350,6 +374,52 @@ public class BMapControlUtil {
 
         //在地图中添加Ground覆盖物
         oldMapOverlay = (GroundOverlay)  baiduMap.addOverlay(ooGround);
+    }
+
+
+    /**
+     * 每个Marker点，包含Marker点坐标以及图标
+     */
+    public class MyItem implements ClusterItem {
+
+//        private MarkerPopupWindowView markerPopupWindowView;     //底部弹窗
+
+        private final LatLng mPosition;
+        private String name;
+        private String text;
+        private String cross_pictures;
+
+        public MyItem(LatLng latLng, String name, String text, String cross_pictures) {
+            mPosition = latLng;
+            this.name = name;
+            this.text = text;
+            this.cross_pictures = cross_pictures;
+        }
+
+        @Override
+        public LatLng getPosition() {
+            return mPosition;
+        }//返回marker的坐标
+
+        @Override
+        public BitmapDescriptor getBitmapDescriptor() {//返回marker的图标
+            return BitmapDescriptorFactory.fromResource(R.mipmap.ic_marker);
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public String getText() {
+            return text;
+        }
+
+        @Override
+        public String getCrossPictures() {
+            return cross_pictures;
+        }
     }
 
 }

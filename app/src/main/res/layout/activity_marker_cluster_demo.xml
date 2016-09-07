@@ -1,0 +1,15 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical">
+
+    <!-- 百度地图 -->
+    <com.baidu.mapapi.map.MapView
+        android:id="@+id/id_bmapView2"
+        android:layout_marginTop="@dimen/action_bar_height"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:clickable="true"/>
+
+</LinearLayout>

@@ -78,6 +78,7 @@
             android:theme="@style/AppTheme" />
         <activity android:name=".activity.FusionActivity" />
         <activity android:name=".activity.FilterActivity" />
+        <activity android:name=".activity.ClusterDemoActivity"/>
     </application>
 
 </manifest>

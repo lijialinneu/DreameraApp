@@ -10,7 +10,7 @@ OPENCV_LIB_TYPE :=STATIC
 
 ifeq ("$(wildcard $(OPENCV_MK_PATH))","")
 #include ..\..\..\..\native\jni\OpenCV.mk
-include C:\Users\10405\AndroidStudioProjects\DreameraJni\native\jni\OpenCV.mk
+include C:\Users\lijialin\AppData\Local\Android\AndroidStudioProjects\DreameraJni\native\jni\OpenCV.mk
 
 else
 include $(OPENCV_MK_PATH)
