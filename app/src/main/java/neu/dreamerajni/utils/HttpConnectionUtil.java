@@ -83,7 +83,7 @@ public class HttpConnectionUtil {
 
 
     /**
-     * Change InputStream to steing
+     * Change InputStream to string
      * @param conn HttUrlConnection
      * @throws Exception
      */

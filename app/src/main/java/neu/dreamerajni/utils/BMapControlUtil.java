@@ -94,7 +94,6 @@ public class BMapControlUtil {
         markerPopupWindowView = new MarkerPopupWindowView(activity);
         map = (RelativeLayout) activity.findViewById(R.id.id_map);
         baiduMap = mapView.getMap();
-
         baiduMap.setOnMapLoadedCallback(callBackHandler);
 
         clusterManager = new ClusterManager<MyItem>(activity, baiduMap);
